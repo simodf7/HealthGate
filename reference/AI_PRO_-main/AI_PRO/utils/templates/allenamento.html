@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Allenamento - Fitness Tracker</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --primary-color: #FF4757;
+            --secondary-color: #2ED573;
+            --dark-bg: #2F3542;
+            --light-bg: #F1F2F6;
+            --text-dark: #2F3542;
+            --text-light: #FFFFFF;
+            --gradient-primary: linear-gradient(135deg, #FF4757 0%, #FF6B81 100%);
+            --gradient-secondary: linear-gradient(135deg, #2ED573 0%, #7BED9F 100%);
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: var(--light-bg);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            background: var(--gradient-primary);
+            padding: 1.5rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-light);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .workout-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .video-container {
+            position: relative;
+            background: white;
+            border-radius: 20px;
+            padding: 1rem;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+
+        .video-feed {
+            width: 100%;
+            border-radius: 15px;
+            aspect-ratio: 16/9;
+            object-fit: cover;
+            height: auto;
+        }
+
+        .stats-container {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-card {
+            background: var(--light-bg);
+            border-radius: 15px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card span {
+            color: var(--text-dark);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-card strong {
+            display: block;
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-top: 0.5rem;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            background: var(--gradient-primary);
+            color: var(--text-light);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn.secondary {
+            background: var(--gradient-secondary);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            color: var(--primary-color);
+            font-size: 2rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: var(--secondary-color);
+        }
+
+        .exercise-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .exercise-option {
+            background: var(--gradient-primary);
+            color: var(--text-light);
+            padding: 1rem;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .exercise-option:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .exercise-options button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .exercise-options button:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.05);
+        }
+
+        .exercise-video {
+            width: 100%;
+            height: auto;
+            margin-top: 1rem;
+            border-radius: 15px;
+        }
+
+        .exercise-description {
+            margin-top: 1rem;
+            font-size: 1rem;
+        }
+
+        .repetitions-modal-content {
+            background-color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .repetitions-modal-content .close {
+            position: absolute;
+            top: 10px; /* Margine dall'alto del contenitore bianco */
+            right: 15px; /* Margine dal lato destro del contenitore bianco */
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+
+        .repetitions-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .repetitions-buttons button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 100px;
+        }
+
+        .repetitions-buttons button:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.05);
+        }
+
+        #target-reps-display {
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .repetitions-input-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1rem;
+            gap: 10px;
+        }
+
+        .custom-reps-input {
+            padding: 10px;
+            border: 2px solid var(--primary-color);
+            border-radius: 25px;
+            width: 200px;
+            text-align: center;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .custom-reps-input:focus {
+            border-color: var(--secondary-color);
+        }
+
+        .submit-custom-reps {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .submit-custom-reps:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.05);
+        }
+
+        .timer {
+            width: 100%;
+            height: 3rem; /* Altezza fissa per mantenere la dimensione della card */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #resting-timer {
+            background: var(--gradient-secondary);
+            color: var(--text-light);
+            padding: 1rem;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .workout-summary-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 1.5rem;
+        }
+
+        .workout-summary-table th,
+        .workout-summary-table td {
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .workout-summary-table th {
+            background: var(--gradient-primary);
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .workout-summary-table tr:nth-child(even) {
+            background-color: var(--light-bg);
+        }
+
+        @media (max-width: 768px) {
+            .workout-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-dumbbell"></i> FitTrack AI</h1>
+            <button class="btn secondary" onclick="window.location.href='{{ url_for('logout') }}'">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </header>
+
+        <div class="workout-section">
+            <div class="video-container">
+                <img src="{{ url_for('video_feed') }}" alt="Video Stream" class="video-feed">
+                <div id="start-timer" style="font-size: 2rem; color: var(--primary-color); margin-top: 1rem; display: block;"></div>
+            </div>
+
+            <div class="stats-container">
+                <h2>Statistiche Allenamento</h2>
+                <div class="stat-card">
+                    <span>Ripetizioni</span>
+                    <strong id="reps">0</strong>
+                </div>
+                <div class="stat-card">
+                    <span>Esercizio</span>
+                    <strong id="exercise">Non rilevato</strong>
+                </div>
+                <div class="stat-card">
+                    <span>Target</span>
+                    <strong id="target-reps">0</strong>
+                </div>
+                <div id="resting-timer" style="display: block;">
+                    Recupero: <span id="resting-time">60</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn" onclick="showRepetitionsModal()">
+                <i class="fas fa-bullseye"></i> Target Ripetizioni
+            </button>
+            <button class="btn secondary" onclick="showErrorModal()">
+                <i class="fas fa-exclamation-circle"></i> Segnala Problema
+            </button>
+            <button class="btn" onclick="showWorkoutSummary()">
+                <i class="fas fa-chart-bar"></i> Riepilogo
+            </button>
+            <button class="btn" onclick="resetAllenamento()">
+                <i class="fas fa-redo"></i> Reset Allenamento
+            </button>
+            <button class="btn" onclick="startTimer()">
+                <i class="fas fa-play"></i> Start Allenamento
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Ripetizioni -->
+    <div id="repetitionsModal" class="modal">
+        <div class="repetitions-modal-content">
+            <span class="close" onclick="closeModal('repetitionsModal')">&times;</span>
+            <h2>Set Target Repetitions</h2>
+            <div class="repetitions-input-container">
+                <input 
+                    type="number" 
+                    id="custom-reps-input" 
+                    min="1" 
+                    max="100" 
+                    placeholder="Enter custom reps"
+                    class="custom-reps-input"
+                >
+                <button onclick="setCustomRepetitionTarget()" class="submit-custom-reps">
+                    Set Custom
+                </button>
+            </div>
+            <div class="repetitions-buttons">
+                <button onclick="setRepetitionTarget(8)">8 Reps</button>
+                <button onclick="setRepetitionTarget(9)">9 Reps</button>
+                <button onclick="setRepetitionTarget(10)">10 Reps</button>
+                <button onclick="setRepetitionTarget(11)">11 Reps</button>
+                <button onclick="setRepetitionTarget(12)">12 Reps</button>
+            </div>
+            <div id="target-reps-display"></div>
+        </div>
+    </div>
+
+    <!-- Modale per report errori -->
+    <div id="errorModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('errorModal')">&times;</span>
+            <h2>Select the Exercise with an Issue</h2>
+            <div class="modal-buttons repetitions-buttons">
+                <button onclick="logError('Pushup')">Pushup</button>
+                <button onclick="logError('Military Press')">Military Press</button>
+                <button onclick="logError('Squat')">Squat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Workout Summary Modal -->
+    <div id="workoutSummaryModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('workoutSummaryModal')">&times;</span>
+            <h2>Workout Summary</h2>
+            <table id="workoutSummaryTable">
+                <thead>
+                    <tr>
+                        <th>Exercise</th>
+                        <th>Repetitions</th>
+                    </tr>
+                </thead>
+                <tbody id="workoutSummaryBody">
+                    <!-- Workout summary will be dynamically populated here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+    <div id="exerciseScreen" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('exerciseScreen')">&times;</span>
+            <h2>Seleziona un Esercizio</h2>
+            <div class="exercise-options">
+                <button onclick="showExerciseDetails('squat')">Squat</button>
+                <button onclick="showExerciseDetails('pushup')">Pushup</button>
+                <button onclick="showExerciseDetails('military_press')">Military Press</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="exerciseDetailsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('exerciseDetailsModal')">&times;</span>
+            <h2 id="exercise-title"></h2>
+            <video id="exercise-video" class="exercise-video" controls>
+                <source id="exercise-video-source" src="" type="video/mp4">
+                Il tuo browser non supporta il tag video.
+            </video>
+            <p id="exercise-description" class="exercise-description"></p>
+        </div>
+    </div>
+    
+
+
+    <script>
+        let currentTargetReps = 0;
+        let workoutSummary = {};
+        let resting = false;
+        let restEndTime = 0;
+
+        function fetchExerciseData() {
+            fetch('/exercise_data')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('reps').innerText = data.reps;
+                    document.getElementById('exercise').innerText = data.exercise; // Aggiorna l'esercizio corrente
+                    document.getElementById('target-reps').innerText = data.target_reps || 0;
+                    document.getElementById('start-timer').innerText = data.start_timer > 0 ? data.start_timer : ''; // Aggiungi questa riga
+
+                    // Update workout history
+                    workoutSummary = data.workout_history || {};
+
+                    // Gestisci il timer di riposo
+                    if (data.resting) {
+                        resting = true;
+                        restEndTime = Date.now() + data.rest_remaining * 1000;
+                        document.getElementById('resting-timer').style.display = 'block';
+                        updateRestingTimer();
+                    } else {
+                        resting = false;
+                        document.getElementById('resting-timer').style.display = 'none';
+                    }
+                })
+                .catch(error => console.error('Error fetching exercise data:', error));
+        }
+
+        function updateRestingTimer() {
+            if (resting) {
+                const remainingTime = Math.max(0, Math.round((restEndTime - Date.now()) / 1000));
+                document.getElementById('resting-time').innerText = remainingTime;
+                if (remainingTime > 0) {
+                    requestAnimationFrame(updateRestingTimer);
+                } else {
+                    resting = false;
+                    document.getElementById('resting-timer').style.display = 'none';
+                }
+            }
+        }
+
+        function showWorkoutSummary() {
+            const summaryBody = document.getElementById('workoutSummaryBody');
+            summaryBody.innerHTML = ''; // Clear previous entries
+
+            // Finto resoconto del workout
+            const fakeWorkoutData = {
+                "Squat": Math.floor(Math.random() * 5) + 1, // Numero casuale di serie per Squat
+                "Curl": Math.floor(Math.random() * 5) + 1, // Numero casuale di serie per Curl
+                "Military Press": Math.floor(Math.random() * 5) + 1 // Numero casuale di serie per Military Press
+            };
+
+            const totalWorkoutTime = (Math.floor(Math.random() * 60) + 20) + " min"; // Tempo casuale tra 20 e 80 minuti
+
+            // Popola la tabella con i dati del workout
+            Object.entries(fakeWorkoutData).forEach(([exercise, series]) => {
+                const row = document.createElement('tr');
+                const exerciseCell = document.createElement('td');
+                const seriesCell = document.createElement('td');
+
+                exerciseCell.textContent = exercise;
+                seriesCell.textContent = series;
+
+                row.appendChild(exerciseCell);
+                row.appendChild(seriesCell);
+                summaryBody.appendChild(row);
+            });
+
+            // Mostra il tempo totale di allenamento sotto la tabella
+            const totalTimeRow = document.createElement('tr');
+            const totalTimeCell = document.createElement('td');
+            totalTimeCell.colSpan = 2; // Unisci le colonne
+            totalTimeCell.textContent = `Tempo Totale: ${totalWorkoutTime}`;
+            totalTimeCell.style.fontWeight = "bold";
+            totalTimeCell.style.textAlign = "center";
+
+            totalTimeRow.appendChild(totalTimeCell);
+            summaryBody.appendChild(totalTimeRow);
+
+            // Mostra la modale
+            document.getElementById('workoutSummaryModal').style.display = 'flex';
+        }
+
+
+        function resetWorkoutHistory() {
+            fetch('/reset_workout_history', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    workoutHistory = {};
+                    showWorkoutSummary(); // Refresh the summary
+                    alert('Workout history has been reset');
+                }
+            })
+            .catch(error => {
+                console.error('Error resetting workout history:', error);
+                alert('Failed to reset workout history');
+            });
+        }
+
+        function showRepetitionsModal() {
+            document.getElementById('repetitionsModal').style.display = 'flex';
+        }
+
+        function setRepetitionTarget(reps) {
+            currentTargetReps = reps;
+            
+            // Invia il target di ripetizioni al server
+            fetch('/set_target_reps', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ target_reps: reps })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('target-reps-display').innerText = 
+                    `Target set to ${reps} repetitions`;
+                document.getElementById('repetitionsModal').style.display = 'none';
+                // Aggiorna immediatamente il display
+                document.getElementById('target-reps').innerText = reps;
+            })
+            .catch(error => {
+                console.error('Error setting target reps:', error);
+                alert('Failed to set repetition target');
+            });
+        }
+
+        function setCustomRepetitionTarget() {
+            const customInput = document.getElementById('custom-reps-input');
+            const customReps = parseInt(customInput.value);
+
+            if (customReps > 0 && customReps <= 100) {
+                setRepetitionTarget(customReps);
+                customInput.value = ''; // Pulisci l'input
+            } else {
+                alert('Please enter a valid number of repetitions (1-100)');
+            }
+        }
+
+        function showErrorModal() {
+            document.getElementById('errorModal').style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function logError(exercise) {
+            console.log('Esercizio con errore:', exercise);
+
+            fetch('/log_error', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ error: `Esercizio con errore: ${exercise}` })
+            })
+            .then(response => response.json())
+            .then(data => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Errore registrato',
+                    text: `Errore registrato per: ${exercise}`,
+                    confirmButtonText: 'OK'
+                });
+                closeModal('errorModal');
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Errore',
+                    text: 'Si è verificato un errore durante la registrazione dell\'errore dell\'esercizio.',
+                    confirmButtonText: 'OK'
+                });
+                console.error('Error logging the exercise error:', error);
+            });
+        }
+
+        // Ricarica i dati ogni secondo
+        setInterval(fetchExerciseData, 1000);
+
+        function navigateToExerciseScreen() {
+            document.getElementById('exerciseScreen').style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function showExerciseDetails(exercise) {
+            const exerciseData = {
+                squat: {
+                    title: 'Squat',
+                    video: 'video/squat.mp4', // Percorso locale del video
+                    description: 'Lo squat è fondamentale per allenare i muscoli delle gambe e dei glutei. Esegui il movimento con la schiena dritta, scendendo lentamente controllando la discesa. Mantieni il peso sui talloni e non lasciare che le ginocchia superino la linea delle dita dei piedi.'
+                },
+                pushup: {
+                    title: 'Pushup',
+                    video: 'video/pushup.mp4', // Percorso locale del video
+                    description: 'Il pushup è un esercizio base per rafforzare i pettorali, le spalle e i tricipiti. Mantieni il corpo in linea retta durante l’esecuzione, abbassandoti finché il petto non è vicino al pavimento e poi risollevandoti con controllo.'
+                },
+                military_press: {
+                    title: 'Military Press',
+                    video: 'video/military_press.mp4', // Percorso locale del video
+                    description: 'Il military press aiuta a sviluppare la forza delle spalle. Tieni il bilanciere all’altezza delle spalle, sollevalo sopra la testa senza inarcare la schiena, estendendo completamente le braccia. Abbassa lentamente il bilanciere fino al punto di partenza.'
+                }
+            };
+
+            const selectedExercise = exerciseData[exercise];
+            if (selectedExercise) {
+                // Aggiorna il titolo dell'esercizio
+                document.getElementById('exercise-title').innerText = selectedExercise.title;
+
+                // Aggiorna il video sorgente
+                const videoSource = document.getElementById('exercise-video-source');
+                videoSource.src = selectedExercise.video;
+
+                // Aggiorna la descrizione dell'esercizio
+                document.getElementById('exercise-description').innerText = selectedExercise.description;
+
+                // Ricarica il video per assicurarsi che venga visualizzato correttamente
+                const videoElement = document.getElementById('exercise-video');
+                videoElement.load();
+
+                // Mostra la modale con i dettagli
+                document.getElementById('exerciseDetailsModal').style.display = 'flex';
+            } else {
+                console.error('Esercizio non trovato:', exercise);
+            }
+        }
+
+        function startTimer() {
+        const startTimerElement = document.getElementById('start-timer');
+        let timeLeft = 5; // Imposta il tempo iniziale del timer a 5 secondi
+
+        // Mostra il timer
+        startTimerElement.style.display = 'block';
+
+        const timerInterval = setInterval(() => {
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                startTimerElement.innerHTML = 'Tempo scaduto!';
+                // Nascondi il timer dopo 1 secondo
+                setTimeout(() => {
+                    startTimerElement.style.display = 'none';
+                }, 1000);
+            } else {
+                startTimerElement.innerHTML = timeLeft + ' secondi rimanenti';
+                timeLeft--;
+            }
+        }, 1000);
+    }
+
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const startTimer = document.getElementById("start-timer");
+            const restingTimer = document.getElementById("resting-timer");
+
+            if (startTimer.style.display === "none") {
+                startTimer.style.display = "block";
+            }
+
+            if (restingTimer.style.display === "none") {
+                restingTimer.style.display = "block";
+            }
+
+            startTimer();
+        });
+
+        function resetAllenamento() {
+        // Resetta i valori degli elementi
+        document.getElementById('exercise').innerText = 'Non rilevato';
+        document.getElementById('target-reps').innerText = '0';
+        document.getElementById('resting-time').innerText = '60';
+        document.getElementById('start-timer').innerText = '';
+        document.getElementById('reps').innerText = '0';
+
+        // Nascondi eventuali modali o elementi visibili
+        document.getElementById('exerciseDetailsModal').style.display = 'none';
+
+        // Puoi aggiungere ulteriori reset qui se necessario
+        const videoElement = document.getElementById('exercise-video');
+        videoElement.pause();
+        videoElement.currentTime = 0;
+        document.getElementById('exercise-video-source').src = '';
+        videoElement.load();
+
+        // Invia una richiesta al server per resettare i dati
+        fetch('/reset_workout_history', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                console.log('Workout history reset successfully');
+            } else {
+                console.error('Failed to reset workout history');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+    
+    </script>
+</body>
+
+</html>
