@@ -1,5 +1,6 @@
 fastapi
 uvicorn
 sqlalchemy[asyncio]
-passlib[bcrypt]
 jwt
+bcrypt
+python-codicefiscale

@@ -1,22 +1,70 @@
-from fastapi import FastAPI
-import database as db
+from fastapi import FastAPI, Depends, HTTPException, status
+from db_ops import *
+from validation import *
+from contextlib import asynccontextmanager
+from security import verify_password, create_access_token
 
 app = FastAPI(title="Authentication Service")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    db.init_db() # All'avvio inizializzo il database
+    init_db() # All'avvio inizializzo il database
     yield  # to be executed at shutdown
 
-@app.post("/signup", response_model=dict)
-async def signup(data: SignupRequest, db: AsyncSession = Depends(get_db)):
-    user = await create_user(db, data.username, data.password)
-    return {"id": user.id, "username": user.username}
+"""
+Mettendo come parametro della funzione della route un modello pydantic
+fastapi in automatico a partire da una rihciesta post in cui c'è 
+un json nel body, automaticamente dal file json crea un oggetto 
+pydantic passando i dati del json. Se i dati non sono validi richiama un'eccezione (DA GESTIRE!!!)
 
-@app.post("/login", response_model=TokenResponse)
-async def login(data: LoginRequest, db: AsyncSession = Depends(get_db)):
-    token = await authenticate_user(db, data.username, data.password)
+quindi possiamo fare direttamente data.campo 
+"""
+
+@app.post("/signup/patient", response_model=dict)
+async def signup(data: PatientSignupRequest, db: AsyncSession = Depends(get_db)):
+    patient = await create_patient(data,db)
+    return {"id": patient.id}
+
+@app.post("/signup/operator", response_model=dict)
+async def signup(data: OperatorSignupRequest, db: AsyncSession = Depends(get_db)):
+    operator = await create_operator(data,db)
+    return {"id": operator.id}
+
+
+@app.post("/login/patient", response_model=dict)
+async def login(data: PatientLoginRequest, db: AsyncSession = Depends(get_db)): 
+    patient = find_patient_by_social_number(data, db)
+    # In FastAPI non serve necessariamente un try/except se sollevi direttamente un’eccezione come HTTPException
+    # Se il paziente non esiste, viene sollevata un’HTTPException. 
+    # FastAPI intercetta automaticamente questa eccezione e invia al client una risposta HTTP:
+
+    if not verify_password(data.password, patient.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Password o codice fiscale errati"
+        )
+
+
+    token = create_access_token(patient.id, "patient")
+    
     return {"access_token": token, "token_type": "bearer"}
+
+
+@app.post("/login/operator", response_model=dict)
+async def login(data: OperatorLoginRequest, db: AsyncSession = Depends(get_db)):
+    operator = find_operator_by_med_code(data, db)
+ 
+    if not verify_password(data.password, operator.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Password o codice operatore errati"
+        )
+
+    token = create_access_token(operator.id, "operator")
+    
+    return {"access_token": token, "token_type": "bearer"}
+
+
 
 '''
 @app.post("/login")

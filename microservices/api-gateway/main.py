@@ -70,7 +70,7 @@ async def verify_jwt_with_role(request: Request, required_role: str):
 
 
 # Funzione di proxy verso i microservizi
-async def proxy_request(request: Request, method: str, service_url: str, , role: str):
+async def proxy_request(request: Request, method: str, service_url: str, role: str):
     
     path = request.url.path
 
@@ -125,17 +125,25 @@ def health_check():
 ### Auth service routes 
 
 # Registrazione
-@app.post("/auth/signup") 
+@app.post("/auth/signup/operator") 
+async def signup_proxy(request: Request):
+    return await proxy_request(request, "post", MICROSERVICES["auth"])
+
+# Registrazione
+@app.post("/auth/signup/patient") 
+async def signup_proxy(request: Request):
+    return await proxy_request(request, "post", MICROSERVICES["auth"])
+
+# Login 
+@app.post("/auth/login/patient")
 async def signup_proxy(request: Request):
     return await proxy_request(request, "post", MICROSERVICES["auth"])
 
 
 # Login 
-@app.post("/auth/login")
+@app.post("/auth/login/operator")
 async def signup_proxy(request: Request):
     return await proxy_request(request, "post", MICROSERVICES["auth"])
-
-
 
 
 """

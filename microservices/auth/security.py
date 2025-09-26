@@ -4,10 +4,7 @@ import uuid
 import jwt  # pyjwt
 import bcrypt
 from fastapi import FastAPI, HTTPException
-
-SECRET_KEY = os.getenv("SECRET_KEY", "fallback-supersegreto")
-ALGORITHM = "HS256"
-ACCESS_EXP = 60 * 15  # 15 minuti
+from config import JWT_ALGORITHM, SECRET_KEY, JWT_EXPIRE_MINUTES
 
 def create_access_token(user_id: str, role: str):
     # Otteniamo il timestamp attuale
@@ -17,18 +14,17 @@ def create_access_token(user_id: str, role: str):
     payload = {
         "sub": user_id,              # "subject": identifica l'utente (es. user id)
         "iat": now,                  # "issued at": quando è stato generato il token
-        "exp": now + ACCESS_EXP,     # "expiration": quando il token scadrà (ora + durata in sec.)
+        "exp": now + JWT_EXPIRE_MINUTES,     # "expiration": quando il token scadrà (ora + durata in sec.)
         "jti": str(uuid.uuid4()),    # "JWT ID": identificativo unico del token (utile per blacklist)
         "scope": role                # "scope": ruolo dell’utente (Paziente o Operatore Sanitario)
     }
 
     # Firmiamo il token con la SECRET_KEY e algoritmo scelto (HS256 in questo caso)
-    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    token = jwt.encode(payload, SECRET_KEY, algorithm=[JWT_ALGORITHM])
 
     # Ritorniamo il token JWT pronto da mandare al client
     return token
 
-# Hashing delle password
 
 # Funzione per hashare la password
 def hash_password(password: str) -> str:
@@ -49,14 +45,6 @@ def verify_password(password: str, hashed: str) -> bool:
     # Confronta la password in chiaro con l'hash
     return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
 
-# Esempio d'uso hashing
-password = "SuperSegreta123!"
-hashed_pw = hash_password(password)
-print("Password hashata:", hashed_pw)
-
-# Verifica
-is_valid = verify_password("SuperSegreta123!", hashed_pw)
-print("Password corretta?", is_valid)
 
 # ALTERNATIVA: verificare qui il jwt e non all'API Gateway
 

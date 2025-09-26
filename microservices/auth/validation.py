@@ -7,13 +7,13 @@ import re
 
 
 class SexEnum(str, Enum):
-    male = "m"
-    female = "f"
+    male = "M"
+    female = "F"
 
 
-class PatientSignup(BaseModel):
-    name: Annotated[str, Field(min_length=2, max_length=30)]
-    surname: Annotated[str, Field(min_length=2, max_length=30)]
+class PatientSignupRequest(BaseModel):
+    firstname: Annotated[str, Field(min_length=2, max_length=30)]
+    lastname: Annotated[str, Field(min_length=2, max_length=30)]
     birth_date: date
     sex: SexEnum
     birth_place: Annotated[str, Field(min_length=2, max_length=100)]
@@ -36,10 +36,10 @@ class PatientSignup(BaseModel):
         return v
 
 
-class OperatorCreate(BaseModel):
+class OperatorSignupRequest(BaseModel):
     med_register_code: Optional[Annotated[str, Field(min_length=1, max_length=20)]]
-    name: Annotated[str, Field(min_length=2, max_length=30)]
-    surname: Annotated[str, Field(min_length=2, max_length=30)]
+    firstname: Annotated[str, Field(min_length=2, max_length=30)]
+    lastname: Annotated[str, Field(min_length=2, max_length=30)]
     email: EmailStr
     phone_number: Annotated[str, Field(min_length=7, max_length=20)]
     password: Annotated[str, Field(min_length=8, max_length=128)]
@@ -51,3 +51,15 @@ class OperatorCreate(BaseModel):
         if not re.search(r"\d", v):
             raise ValueError("La password deve contenere almeno un numero")
         return v
+    
+
+
+class PatientLoginRequest(BaseModel):
+    social_sec_number: str 
+    password: str
+
+
+class OperatorLoginRequest(BaseModel):
+    med_register_code: str 
+    password: str
+
