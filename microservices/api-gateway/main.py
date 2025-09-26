@@ -127,7 +127,7 @@ def health_check():
 # Registrazione
 @app.post("/auth/signup/operator") 
 async def signup_proxy(request: Request):
-    return await proxy_request(request, "post", MICROSERVICES["auth"])
+    return await proxy_request(request, "post", os.get)
 
 # Registrazione
 @app.post("/auth/signup/patient") 
