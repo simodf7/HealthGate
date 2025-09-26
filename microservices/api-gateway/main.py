@@ -27,8 +27,7 @@ async def lifespan(app: FastAPI):
     await client.aclose()
 
 
-# autenticazione jwt 
-
+# autenticazione jwt
 async def verify_jwt(request: Request):
     auth_header = request.headers.get("Authorization")
     if not auth_header or not auth_header.startswith("Bearer "):
@@ -36,23 +35,48 @@ async def verify_jwt(request: Request):
 
     token = auth_header.split(" ")[1]
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=JWT_ALGORITHM)
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[JWT_ALGORITHM])
         request.state.user = payload  # salviamo l’utente per usi successivi
-
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token scaduto")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Token invalido")
 
 
+# --- verifica token e controllo ruolo generico ---
+async def verify_jwt_with_role(request: Request, required_role: str):
+    """
+    Verifica firma e scadenza del token e controlla che l'utente
+    abbia il ruolo richiesto.
+    """
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Token mancante")
+
+    token = auth_header.split(" ")[1]
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[JWT_ALGORITHM])
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token scaduto")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Token non valido")
+
+    # Controllo ruolo
+    if payload.get("scope") != required_role:
+        raise HTTPException(status_code=403, detail="Permesso negato")
+
+    return payload
+
 
 # Funzione di proxy verso i microservizi
-async def proxy_request(request: Request, method: str, service_url: str):
+async def proxy_request(request: Request, method: str, service_url: str, , role: str):
     
     path = request.url.path
 
     if not path.startswith(("/login", "/signup")):
-        await verify_jwt(request)
+        # await verify_jwt(request)
+        await verify_jwt_with_role(request, role)
 
     url = f"{service_url}{request.url.path}"  # concateniamo con l'url del microservizio es. /localhost:8001
 

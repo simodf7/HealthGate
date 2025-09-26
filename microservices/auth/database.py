@@ -9,8 +9,13 @@ SessionLocal = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=F
 
 Base = declarative_base()
 
+# Definisce una funzione asincrona per inizializzare il database
 async def init_db():
+    # Apre una connessione asincrona al database in modalità transazionale
     async with engine.begin() as conn:
+        # Esegue la funzione sincrona 'create_all' di SQLAlchemy
+        # che crea tutte le tabelle definite nei modelli ereditati da Base
+        # 'run_sync' permette di eseguire funzioni sincrone in contesto asincrono
         await conn.run_sync(Base.metadata.create_all)
 
 

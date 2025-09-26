@@ -51,4 +51,3 @@ class OperatorCreate(BaseModel):
         if not re.search(r"\d", v):
             raise ValueError("La password deve contenere almeno un numero")
         return v
-
