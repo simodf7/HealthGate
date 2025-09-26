@@ -27,7 +27,7 @@ async def lifespan(app: FastAPI):
     await client.aclose()
 
 
-# implementare l'autenticazione con i token jwt 
+# autenticazione jwt 
 
 async def verify_jwt(request: Request):
     auth_header = request.headers.get("Authorization")
@@ -101,7 +101,7 @@ def health_check():
 ### Auth service routes 
 
 # Registrazione
-@app.post("/auth/signup")
+@app.post("/auth/signup") 
 async def signup_proxy(request: Request):
     return await proxy_request(request, "post", MICROSERVICES["auth"])
 
