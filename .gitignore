@@ -1,0 +1,16 @@
+# Ambiente virtuale
+venv/
+__pycache__/
+*.pyc
+
+# Config e variabili ambiente
+.env
+*.env
+
+# File di build / cache
+*.log
+*.sqlite3
+
+# Cartelle IDE
+.vscode/
+.idea/
