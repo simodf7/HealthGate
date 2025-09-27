@@ -13,18 +13,19 @@ in modo semplice, un po' come requests, ma con alcune differenze:
 •	gestisce connessioni persistenti (connection pooling),
 
 """
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    app.state.client = httpx.AsyncClient()
+    yield  # to be executed at shutdown
+    await app.state.client.aclose()
  
-app = FastAPI(title="API Gateway")
+app = FastAPI(title="API Gateway", lifespan=lifespan)
 
 
 # creiamo un client httpx.AsyncClient allo startup 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    global client
-    client = httpx.AsyncClient()
-    yield  # to be executed at shutdown
-    await client.aclose()
+
 
 
 # autenticazione jwt
@@ -70,15 +71,16 @@ async def verify_jwt_with_role(request: Request, required_role: str):
 
 
 # Funzione di proxy verso i microservizi
-async def proxy_request(request: Request, method: str, service_url: str, role: str):
+async def proxy_request(request: Request, method: str, service_url: str, role: str = None):
     
     path = request.url.path
-
-    if not path.startswith(("/login", "/signup")):
+    
+    if not path.startswith(("/login","/signup")):
         # await verify_jwt(request)
         await verify_jwt_with_role(request, role)
 
     url = f"{service_url}{request.url.path}"  # concateniamo con l'url del microservizio es. /localhost:8001
+
 
     """
     Esempio: 
@@ -108,7 +110,7 @@ async def proxy_request(request: Request, method: str, service_url: str, role: s
         headers.pop("Authorization", None)  # il microservizio non ha bisogno del token
 
     # Richiesta al microservizio
-    response = await client.request(method, url, content=body, headers=headers)
+    response = await app.state.client.request(method, url, content=body, headers=headers)
 
     if response.headers.get("content-type", "application/json"):
         return JSONResponse(content=response.json(), status_code=response.status_code)
@@ -117,7 +119,7 @@ async def proxy_request(request: Request, method: str, service_url: str, role: s
  
 
 # Health check endpoint to verify if gateway is properly running
-@app.get("/health")
+@app.get("/")
 def health_check():
     return{"status": "API Gateway running"}
 
@@ -125,23 +127,23 @@ def health_check():
 ### Auth service routes 
 
 # Registrazione
-@app.post("/auth/signup/operator") 
+@app.post("/signup/operator") 
 async def signup_proxy(request: Request):
     return await proxy_request(request, "post", MICROSERVICES["auth"])
 
 # Registrazione
-@app.post("/auth/signup/patient") 
+@app.post("/signup/patient") 
 async def signup_proxy(request: Request):
     return await proxy_request(request, "post", MICROSERVICES["auth"])
 
 # Login 
-@app.post("/auth/login/patient")
+@app.post("/login/patient")
 async def signup_proxy(request: Request):
     return await proxy_request(request, "post", MICROSERVICES["auth"])
 
 
 # Login 
-@app.post("/auth/login/operator")
+@app.post("/login/operator")
 async def signup_proxy(request: Request):
     return await proxy_request(request, "post", MICROSERVICES["auth"])
 

@@ -4,12 +4,14 @@ from validation import *
 from contextlib import asynccontextmanager
 from security import verify_password, create_access_token
 
-app = FastAPI(title="Authentication Service")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    init_db() # All'avvio inizializzo il database
+    await init_db() # All'avvio inizializzo il database
     yield  # to be executed at shutdown
+
+
+app = FastAPI(title="Authentication Service", lifespan=lifespan)
 
 """
 Mettendo come parametro della funzione della route un modello pydantic
@@ -19,6 +21,10 @@ pydantic passando i dati del json. Se i dati non sono validi richiama un'eccezio
 
 quindi possiamo fare direttamente data.campo 
 """
+
+@app.get("/", response_model=dict)
+async def health():
+    return {"Status": "T'appost! Auth Service running"}
 
 @app.post("/signup/patient", response_model=dict)
 async def signup(data: PatientSignupRequest, db: AsyncSession = Depends(get_db)):
@@ -33,7 +39,7 @@ async def signup(data: OperatorSignupRequest, db: AsyncSession = Depends(get_db)
 
 @app.post("/login/patient", response_model=dict)
 async def login(data: PatientLoginRequest, db: AsyncSession = Depends(get_db)): 
-    patient = find_patient_by_social_number(data, db)
+    patient = await find_patient_by_social_number(data, db)
     # In FastAPI non serve necessariamente un try/except se sollevi direttamente un’eccezione come HTTPException
     # Se il paziente non esiste, viene sollevata un’HTTPException. 
     # FastAPI intercetta automaticamente questa eccezione e invia al client una risposta HTTP:
@@ -52,7 +58,7 @@ async def login(data: PatientLoginRequest, db: AsyncSession = Depends(get_db)):
 
 @app.post("/login/operator", response_model=dict)
 async def login(data: OperatorLoginRequest, db: AsyncSession = Depends(get_db)):
-    operator = find_operator_by_med_code(data, db)
+    operator = await find_operator_by_med_code(data, db)
  
     if not verify_password(data.password, operator.hashed_password):
         raise HTTPException(

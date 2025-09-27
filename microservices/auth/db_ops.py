@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
-from schemas import Base, Patient, Operator, Sex
+from sqlalchemy import select
+from schemas import Base, Patient, Operator
 from validation import *
 from config import DATABASE_URL
 from codicefiscale import codicefiscale
@@ -24,22 +25,22 @@ async def init_db():
 
 
 # dependency
-def get_db():
+async def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
-        db.close()
+        await db.close()
 
 # Logica di interazione con il database
 # CRUD 
 
-def create_patient(data: PatientSignupRequest, db: AsyncSession):
+async def create_patient(data: PatientSignupRequest, db: AsyncSession):
     patient = Patient(
         social_sec_number = codicefiscale.encode(
             lastname= data.lastname, 
             firstname= data.firstname,
-            gender = "M" if data.sex == Sex.MALE else "F",
+            gender = data.sex,
             birthdate =  data.birth_date.strftime("%d/%m/%Y"), 
             birthplace= data.birth_place
         ), 
@@ -51,13 +52,13 @@ def create_patient(data: PatientSignupRequest, db: AsyncSession):
         hashed_password = hash_password(data.password)
     )
     db.add(patient)
-    db.commit()
-    db.refresh(patient)  # ottieni l'oggetto con id aggiornato
+    await db.commit()
+    await db.refresh(patient)  # ottieni l'oggetto con id aggiornato
     return patient
 
-def create_operator(data: OperatorSignupRequest, db: AsyncSession):
+async def create_operator(data: OperatorSignupRequest, db: AsyncSession):
     operator = Operator(
-        med_register_code = data.med_register_codes, 
+        med_register_code = data.med_register_code, 
         firstname = data.firstname, 
         lastname = data.lastname, 
         email = data.email, 
@@ -69,8 +70,14 @@ def create_operator(data: OperatorSignupRequest, db: AsyncSession):
     db.refresh(operator)  # ottieni l'oggetto con id aggiornato
     return operator
 
-def find_patient_by_social_number(data: PatientLoginRequest, db: AsyncSession):
-    patient = db.query(Patient).filter(Patient.social_sec_number == data.social_sec_number).first() 
+async def find_patient_by_social_number(data: PatientLoginRequest, db: AsyncSession): # non si puo piu usare db.query ma db.execute
+    result = await db.execute(
+        select(Patient).where(Patient.social_sec_number == data.social_sec_number)
+    )
+
+    # prende il primo valore della prima colonna del risultato, oppure None se non trova niente.
+    # equivalente del first 
+    patient = result.scalar_one_or_none()  
     if patient is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -80,8 +87,11 @@ def find_patient_by_social_number(data: PatientLoginRequest, db: AsyncSession):
     return patient
     
 
-def find_operator_by_med_code(data: OperatorLoginRequest, db: AsyncSession):
-    operator = db.query(Operator).filter(Operator.med_register_code == data.med_register_code).first() 
+async def find_operator_by_med_code(data: OperatorLoginRequest, db: AsyncSession):
+    result = await db.execute(
+        select(Operator).where(Operator.med_register_code == data.med_register_code)
+    )
+    operator = result.scalar_one_or_none() 
     if operator is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

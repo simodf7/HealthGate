@@ -20,7 +20,7 @@ def create_access_token(user_id: str, role: str):
     }
 
     # Firmiamo il token con la SECRET_KEY e algoritmo scelto (HS256 in questo caso)
-    token = jwt.encode(payload, SECRET_KEY, algorithm=[JWT_ALGORITHM])
+    token = jwt.encode(payload, SECRET_KEY, algorithm=JWT_ALGORITHM)
 
     # Ritorniamo il token JWT pronto da mandare al client
     return token

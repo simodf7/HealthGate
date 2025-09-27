@@ -1,13 +1,8 @@
 from sqlalchemy.orm import declarative_base
-from sqlalchemy import Column, Integer, String, Date, Enum
-import enum
+from sqlalchemy import Column, Integer, String, Date
 
 Base = declarative_base()
 
-class Sex(enum.Enum):
-    male = "M"
-    female = "F" 
-    
 
 class Patient(Base):
     __tablename__ = "patients"
@@ -16,7 +11,7 @@ class Patient(Base):
     firstname = Column(String(30), nullable=False) 
     lastname = Column(String(30), nullable=False)
     birth_date = Column(Date, nullable=False)
-    sex = Column(Enum(Sex), nullable=False)
+    sex = Column(String(1), nullable=False)
     birth_place = Column(String(100), nullable=False)
     hashed_password = Column(String(255), nullable=False)
     

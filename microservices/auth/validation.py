@@ -1,21 +1,15 @@
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from datetime import date
-from enum import Enum
 from typing import Optional
 from typing_extensions import Annotated
 import re
-
-
-class SexEnum(str, Enum):
-    male = "M"
-    female = "F"
 
 
 class PatientSignupRequest(BaseModel):
     firstname: Annotated[str, Field(min_length=2, max_length=30)]
     lastname: Annotated[str, Field(min_length=2, max_length=30)]
     birth_date: date
-    sex: SexEnum
+    sex: Annotated[str, Field(pattern="^[MF]$")]
     birth_place: Annotated[str, Field(min_length=2, max_length=100)]
     password: Annotated[str, Field(min_length=8, max_length=128)]
 

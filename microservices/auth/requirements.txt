@@ -1,5 +1,6 @@
 fastapi
 uvicorn
+asyncpg
 sqlalchemy[asyncio]
 pydantic[email]
 jwt
