@@ -14,6 +14,7 @@ in modo semplice, un po' come requests, ma con alcune differenze:
 
 """
 
+# creiamo un client httpx.AsyncClient allo startup 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     app.state.client = httpx.AsyncClient()
@@ -23,11 +24,10 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="API Gateway", lifespan=lifespan)
 
 
-# creiamo un client httpx.AsyncClient allo startup 
 
 
 
-
+"""
 # autenticazione jwt
 async def verify_jwt(request: Request):
     auth_header = request.headers.get("Authorization")
@@ -42,7 +42,7 @@ async def verify_jwt(request: Request):
         raise HTTPException(status_code=401, detail="Token scaduto")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Token invalido")
-
+"""
 
 # --- verifica token e controllo ruolo generico ---
 async def verify_jwt_with_role(request: Request, required_role: str):
@@ -50,6 +50,8 @@ async def verify_jwt_with_role(request: Request, required_role: str):
     Verifica firma e scadenza del token e controlla che l'utente
     abbia il ruolo richiesto.
     """
+    print(request.headers)
+
     auth_header = request.headers.get("Authorization")
     if not auth_header or not auth_header.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Token mancante")
@@ -64,10 +66,13 @@ async def verify_jwt_with_role(request: Request, required_role: str):
         raise HTTPException(status_code=401, detail="Token non valido")
 
     # Controllo ruolo
-    if payload.get("scope") != required_role:
-        raise HTTPException(status_code=403, detail="Permesso negato")
+    role = payload.get("scope")
 
-    return payload
+    if role != required_role:
+        raise HTTPException(status_code=403, detail="Permesso negato")    
+
+    request.state.user = {"user_id": payload.get("sub"), "role": role, "expiry": payload.get("exp")}
+    return 
 
 
 # Funzione di proxy verso i microservizi
@@ -106,7 +111,8 @@ async def proxy_request(request: Request, method: str, service_url: str, role: s
     # Se l’utente è autenticato, aggiungo info interne - Strategia microservizi si fidano del controllo gateway sul token 
     if hasattr(request.state, "user"):
         headers["X-User-Id"] = str(request.state.user["user_id"])
-        headers["X-User-Role"] = request.state.user.get("role", "user")
+        headers["X-User-Role"] = str(request.state.user.get("role", "user"))
+        headers["X-User-Expiry"] = str(request.state.user.get("expiry", ""))
         headers.pop("Authorization", None)  # il microservizio non ha bisogno del token
 
     # Richiesta al microservizio
@@ -146,6 +152,14 @@ async def signup_proxy(request: Request):
 @app.post("/login/operator")
 async def signup_proxy(request: Request):
     return await proxy_request(request, "post", MICROSERVICES["auth"])
+
+
+## Decision engine service route
+@app.get("/llm")
+async def signup_proxy(request: Request):
+    return await proxy_request(request, "get", MICROSERVICES["decision"], "patient")
+
+
 
 
 """

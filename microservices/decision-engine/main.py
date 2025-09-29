@@ -25,6 +25,11 @@ def health():
     """Health check"""
     return {"status": "LLM Service running"}
 
+@app.get("/llm")
+def health_token():
+    """Testing >TOken check"""
+    return {"status": "Token Check running"}
+
 @app.post("/llm/extract", response_model=Dict)
 async def extract(req: ClinicalRequest):
     """
