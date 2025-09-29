@@ -15,4 +15,9 @@ __pycache__/
 .vscode/
 .idea/
 
+# test code
 provacode.py 
+provatoken.py
+
+# cartelle audio
+prove_audio/

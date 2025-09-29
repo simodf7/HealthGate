@@ -12,7 +12,7 @@ def create_access_token(user_id: str, role: str):
 
     # Definiamo il contenuto (payload) del JWT:
     payload = {
-        "sub": user_id,              # "subject": identifica l'utente (es. user id)
+        "sub": str(user_id),              # "subject": identifica l'utente (es. user id)
         "iat": now,                  # "issued at": quando è stato generato il token
         "exp": now + JWT_EXPIRE_MINUTES,     # "expiration": quando il token scadrà (ora + durata in sec.)
         "jti": str(uuid.uuid4()),    # "JWT ID": identificativo unico del token (utile per blacklist)
