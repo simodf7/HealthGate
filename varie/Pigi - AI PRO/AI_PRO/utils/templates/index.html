@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitness Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4F46E5;
+            --primary-hover: #4338CA;
+            --secondary-color: #10B981;
+            --background-color: #F3F4F6;
+            --text-dark: #1F2937;
+            --text-light: #6B7280;
+            --danger-color: #EF4444;
+            --danger-hover: #DC2626;
+            --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --success-color: #34D399;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            background-color: var(--background-color);
+            line-height: 1.6;
+            color: var(--text-dark);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 20px;
+            padding: 3rem;
+            color: white;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .user-header {
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            transform: translateY(-40px);
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .user-info h1 {
+            color: var(--primary-color);
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .user-info p {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn i {
+            font-size: 1.2rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: var(--danger-hover);
+            transform: translateY(-2px);
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            background-color: var(--secondary-color);
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        /* Stili per le statistiche */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background-color: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .stat-card h3 {
+            color: var(--text-light);
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stat-card .value {
+            color: var(--text-dark);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+
+        .stat-card .text-light {
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+
+        .chart-container {
+            background-color: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            margin-top: 1.5rem;
+        }
+
+        .chart-container h3 {
+            color: var(--text-dark);
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .workout-week {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .day-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .day-box span {
+            font-size: 0.875rem;
+            color: var(--text-light);
+        }
+
+        .day-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 0.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .day-completed {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .day-incomplete {
+            background-color: var(--background-color);
+            color: var(--text-light);
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background-color: var(--background-color);
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary-color);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 2rem;
+            }
+
+            .user-header {
+                padding: 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .button-container {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .workout-week {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 1rem;
+            }
+
+            .day-box:nth-child(n+5) {
+                margin-top: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .workout-week {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <section class="hero-section">
+            <h2>Fitness Tracker</h2>
+            <p>Monitora i tuoi progressi e raggiungi i tuoi obiettivi</p>
+        </section>
+
+        <main class="user-header">
+            <div class="user-info">
+                <div class="role-badge">
+                    {% if 'adminRole' in user_info.roles %}
+                        <i class="fas fa-shield-alt"></i> Amministratore
+                    {% elif 'userRole' in user_info.roles %}
+                        <i class="fas fa-user"></i> Utente
+                    {% endif %}
+                </div>
+                <h1>Benvenuto, {{ user_info.get('preferred_username', 'Utente') }}</h1>
+                <p><i class="fas fa-user-circle"></i> <strong>Nome:</strong> {{ user_info.get('given_name', 'N/A') }}</p>
+                <p><i class="fas fa-id-card"></i> <strong>Cognome:</strong> {{ user_info.get('family_name', 'N/A') }}</p>
+
+                {% if 'userRole' in user_info.roles %}
+                <!-- Statistiche Generali - visibili solo agli utenti -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3><i class="fas fa-dumbbell"></i> Allenamenti Settimanali</h3>
+                        <div class="value">5/7</div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: 71%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <h3><i class="fas fa-clock"></i> Minuti di Attività</h3>
+                        <div class="value">320/400</div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: 80%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <h3><i class="fas fa-weight"></i> Progresso Peso</h3>
+                        <div class="value">-1.5 kg</div>
+                        <p class="text-light">Ultimo mese</p>
+                    </div>
+                </div>
+
+                <!-- Calendario Allenamenti - visibile solo agli utenti -->
+                <div class="chart-container">
+                    <h3><i class="fas fa-calendar-alt"></i> Allenamenti Questa Settimana</h3>
+                    <div class="workout-week">
+                        <div class="day-box">
+                            <span>Lun</span>
+                            <div class="day-circle day-completed"><i class="fas fa-check"></i></div>
+                        </div>
+                        <div class="day-box">
+                            <span>Mar</span>
+                            <div class="day-circle day-completed"><i class="fas fa-check"></i></div>
+                        </div>
+                        <div class="day-box">
+                            <span>Mer</span>
+                            <div class="day-circle day-incomplete">-</div>
+                        </div>
+                        <div class="day-box">
+                            <span>Gio</span>
+                            <div class="day-circle day-completed"><i class="fas fa-check"></i></div>
+                        </div>
+                        <div class="day-box">
+                            <span>Ven</span>
+                            <div class="day-circle day-incomplete">-</div>
+                        </div>
+                        <div class="day-box">
+                            <span>Sab</span>
+                            <div class="day-circle day-completed"><i class="fas fa-check"></i></div>
+                        </div>
+                        <div class="day-box">
+                            <span>Dom</span>
+                            <div class="day-circle day-incomplete">-</div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="button-container">
+                    {% if 'adminRole' in user_info.roles %}
+                        <button onclick="window.location.href='{{ url_for('dashboard') }}'" class="btn btn-primary">
+                            <i class="fas fa-chart-line"></i> Vai alla dashboard
+                        </button>
+                    {% elif 'userRole' in user_info.roles %}
+                        <button onclick="window.location.href='{{ url_for('allenamento') }}'" class="btn btn-primary">
+                            <i class="fas fa-dumbbell"></i> Inizia Allenamento
+                        </button>
+                    {% endif %}
+                    <button onclick="window.location.href='{{ url_for('logout') }}'" class="btn btn-danger">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

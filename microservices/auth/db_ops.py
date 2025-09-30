@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from schemas import Base, Patient, Operator
 from validation import *
 from config import DATABASE_URL
@@ -34,7 +35,6 @@ async def get_db():
 
 # Logica di interazione con il database
 # CRUD 
-
 async def create_patient(data: PatientSignupRequest, db: AsyncSession):
     patient = Patient(
         social_sec_number = codicefiscale.encode(
@@ -52,9 +52,16 @@ async def create_patient(data: PatientSignupRequest, db: AsyncSession):
         hashed_password = hash_password(data.password)
     )
     db.add(patient)
-    await db.commit()
-    await db.refresh(patient)  # ottieni l'oggetto con id aggiornato
-    return patient
+    try:
+        await db.commit()
+        await db.refresh(patient)
+        return patient
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=400,
+            detail="Un paziente con gli stessi dati anagrafici esiste già."
+        )
 
 async def create_operator(data: OperatorSignupRequest, db: AsyncSession):
     operator = Operator(
@@ -66,8 +73,8 @@ async def create_operator(data: OperatorSignupRequest, db: AsyncSession):
         hashed_password = hash_password(data.password)
     )
     db.add(operator)
-    db.commit()
-    db.refresh(operator)  # ottieni l'oggetto con id aggiornato
+    await db.commit()
+    await db.refresh(operator)
     return operator
 
 async def find_patient_by_social_number(data: PatientLoginRequest, db: AsyncSession): # non si puo piu usare db.query ma db.execute
@@ -99,6 +106,3 @@ async def find_operator_by_med_code(data: OperatorLoginRequest, db: AsyncSession
         )
 
     return operator
-    
-
-

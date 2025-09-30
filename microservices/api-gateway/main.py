@@ -1,3 +1,9 @@
+# python -m uvicorn main:app  --reload --host 0.0.0.0 --port 8000
+# Invoke-RestMethod -Uri "http://localhost:8000/signup/patient" -Method POST -Headers @{ "Content-Type" = "application/json" } ` -Body '{"firstname":"Rita","lastname":"Castaldi","birth_date":"2001-08-09", "sex":"F","birth_place":"Napoli","password":"Password124"}'
+# Invoke-RestMethod -Uri "http://localhost:8000/signup/patient" -Method POST -Headers @{ "Content-Type" = "application/json" } ` -Body '{"firstname":"Alessandro","lastname":"Campanella","birth_date":"2001-11-27", "sex":"M","birth_place":"Napoli","password":"Password124"}'
+# Invoke-RestMethod -Uri "http://localhost:8000/signup/operator" -Method POST -Headers @{ "Content-Type" = "application/json" } -Body '{"med_register_code":"MED123456","firstname":"Giulia","lastname":"Rossi","email":"giulia.rossi@example.com","phone_number":"+393331112233","password":"SecurePass!2025"}'
+
+
 from fastapi import FastAPI, Request, HTTPException, Response
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
