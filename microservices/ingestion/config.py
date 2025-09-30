@@ -5,7 +5,6 @@ import os
 load_dotenv()
 
 # Recupera le variabili
-SECRET_KEY = os.getenv("SECRET_KEY")
-JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
-JWT_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", 60))
-DATABASE_URL = os.getenv("DATABASE_URL")
+AUDIO_FOLDER = os.getenv("AUDIO_FOLDER")
+TRANSCRIPTS_FOLDER = os.getenv("TRANSCRIPTS_FOLDER")
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")

@@ -117,11 +117,8 @@ async def proxy_request(request: Request, method: str, service_url: str, role: s
 
     # Richiesta al microservizio
     response = await app.state.client.request(method, url, content=body, headers=headers)
-
-    if response.headers.get("content-type", "application/json"):
-        return JSONResponse(content=response.json(), status_code=response.status_code)
-    else: 
-        return Response(content=response.content, status_code=response.status_code, headers=response.headers)
+ 
+    return Response(content=response.content, status_code=response.status_code, headers=response.headers)
  
 
 # Health check endpoint to verify if gateway is properly running
@@ -154,18 +151,19 @@ async def signup_proxy(request: Request):
     return await proxy_request(request, "post", MICROSERVICES["auth"])
 
 
+
+
+## Ingestion service route
+@app.post("/ingestion")
+async def ingestion_proxy(request: Request):
+    # Richiede ruolo operator (es. medico che invia audio)
+    return await proxy_request(request, "post", MICROSERVICES["ingest"], "patient")
+
+
 ## Decision engine service route
 @app.get("/llm")
 async def signup_proxy(request: Request):
     return await proxy_request(request, "get", MICROSERVICES["decision"], "patient")
-
-
-## Ingestion service route (Speech-to-Text)
-@app.post("/ingestion/transcribe")
-async def ingestion_proxy(request: Request):
-    # Richiede ruolo operator (es. medico che invia audio)
-    return await proxy_request(request, "post", MICROSERVICES["ingestion"], "operator")
-
 
 """
 # Routing dinamico

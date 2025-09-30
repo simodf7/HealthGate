@@ -18,15 +18,19 @@ $token = $loginResponse.access_token
 Write-Host "Token ottenuto:" $token
 
 
-$llmHeaders = @{
+# --- 2. Invia file per trascrizione ---
+$filePath = "C:\Users\simon\Desktop\HealthGate\HealthGate\prove_audio\rumore_rita.mp3"
+
+$headers = @{
     "Authorization" = "Bearer $token"
-    "Content-Type"  = "application/json"
 }
 
-# --- 3. Chiamata al microservizio /llm ---
-$llmResponse = Invoke-RestMethod -Uri "$baseUrl/llm" -Method GET `
-    -Headers $llmHeaders `
+$form = @{
+    file = Get-Item "C:\Users\simon\Desktop\HealthGate\HealthGate\prove_audio\rumore_rita.mp3"
+}
 
-# --- 4. Mostra risposta ---
-Write-Host "Risposta da /llm:"
-$llmResponse | ConvertTo-Json -Depth 5
+$response = Invoke-WebRequest -Uri "http://localhost:8000/ingestion" -Method Post -Headers $headers -Form $form
+
+# --- 3. Mostra risposta ---
+Write-Host "Risposta da /ingestion:"
+$response

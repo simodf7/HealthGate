@@ -1,75 +1,86 @@
 import os
-import json
 from datetime import datetime
-import whisper
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Form
+from contextlib import asynccontextmanager
 from fastapi.responses import JSONResponse
+from ingest_ops import transcribe_audio_file, save_transcription, correct_transcription
+from model import load_model_stt, load_model_correction
 
-# Caricamento modello Whisper una sola volta
-MODEL_NAME = "base"
-print(f"Caricamento del modello Whisper: {MODEL_NAME}")
-model = whisper.load_model(MODEL_NAME)
 
-# Config cartelle
-AUDIO_FOLDER = os.path.join(os.path.dirname(__file__), "audio")
-TRANSCRIPTS_FOLDER = os.path.join(os.path.dirname(__file__), "transcripts")
-os.makedirs(AUDIO_FOLDER, exist_ok=True)
-os.makedirs(TRANSCRIPTS_FOLDER, exist_ok=True)
 
-app = FastAPI(title="Ingestion Microservice - Speech to Text")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Caricamento modello Whisper all'avvio del servizio
+    global stt_model, correction_model
+    # Creazione cartelle se non esistono    
+    os.makedirs("audio", exist_ok=True)
+    os.makedirs("transcripts", exist_ok=True)
+    stt_model = load_model_stt()
+    correction_model = load_model_correction() 
+    print("Modello caricato correttamente.")
+    yield
 
-def transcribe_audio_file(audio_path: str) -> str:
+
+app = FastAPI(title="Ingestion Microservice", lifespan=lifespan)
+
+@app.get("/")
+async def health_check():
+    return {"status": "T'appost ! Il microservizio di ingestion è attivo."}
+
+
+
+@app.post("/ingestion", response_model=dict)
+async def ingest(
+            file: UploadFile = File(None),
+            text: str = Form(None)
+        ):
+    
     """
-    Trascrive un singolo file audio con Whisper
+    Endpoint per ricevere o un file audio o un testo manuale
     """
+    print("File:" , file)
+    print("FIle filename: ", file.filename)
+
     try:
-        print(f"Trascrizione in corso: {audio_path}")
-        result = model.transcribe(audio_path)
-        return result["text"]
-    except Exception as e:
-        print(f"Errore durante la trascrizione di {audio_path}: {e}")
-        raise
+        if file:
+            audio_path = os.path.join("audio", file.filename)
+            print("Audio path:", audio_path)
+            with open(audio_path, "wb") as buffer:
+                buffer.write(await file.read())
+ 
+            # Trascrizione
+            raw_text = transcribe_audio_file(stt_model, audio_path)
 
-def save_transcription(text: str, filename: str) -> str:
-    """
-    Salva la trascrizione in JSON con testo e timestamp
-    """
-    try:
-        output_path = os.path.join(TRANSCRIPTS_FOLDER, filename + ".json")
-        with open(output_path, "w", encoding="utf-8") as f:
-            json.dump({
-                "transcription": text,
-                "timestamp": datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
-            }, f, indent=2)
-        print(f"Trascrizione salvata correttamente in: {output_path}")
-        return output_path
-    except Exception as e:
-        print(f"Errore durante il salvataggio: {e}")
-        raise
-
-@app.post("/ingestion/transcribe")
-async def transcribe(file: UploadFile = File(...)):
-    """
-    Endpoint per ricevere un file audio, trascriverlo e restituire il testo
-    """
-    try:
-        # Salvataggio temporaneo file audio
-        audio_path = os.path.join(AUDIO_FOLDER, file.filename)
-        with open(audio_path, "wb") as buffer:
-            buffer.write(await file.read())
-
-        # Trascrizione
-        text = transcribe_audio_file(audio_path)
-
-        # Salvataggio transcript
-        base_filename = os.path.splitext(file.filename)[0]
-        save_transcription(text, base_filename)
-
-        # Risposta API
-        return JSONResponse(content={
-            "filename": file.filename,
-            "transcription": text,
+            try:
+                os.remove(audio_path)
+                print(f"Audio {audio_path} eliminato")
+            except Exception as cleanup_error:
+                print(f"Errore eliminazione {audio_path}: {cleanup_error}")
+    
+ 
+        elif text:
+            raw_text = text
+ 
+        else:
+           
+            raise HTTPException(status_code=400, detail="Devi fornire un file audio o del testo")
+ 
+        # Correzione
+        corrected_text = correct_transcription(correction_model, transcription=raw_text)
+ 
+        # Salvataggio transcript (usiamo timestamp come nome se non è audio)
+        base_filename = os.path.splitext(file.filename)[0] if file else f"manual_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        save_transcription(corrected_text, base_filename)
+ 
+        response = {
+            "input_type": "audio" if file else "text",
+            "filename": file.filename if file else None,
+            "corrected_text": corrected_text,
             "timestamp": datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
-        })
+        }
+
+        print("Response:", response)    
+        return response
+ 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Errore durante la trascrizione: {e}")
+        raise HTTPException(status_code=500, detail=f"Errore durante l'ingestione: {e}")
