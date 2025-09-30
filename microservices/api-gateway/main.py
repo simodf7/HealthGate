@@ -160,6 +160,11 @@ async def signup_proxy(request: Request):
     return await proxy_request(request, "get", MICROSERVICES["decision"], "patient")
 
 
+## Ingestion service route (Speech-to-Text)
+@app.post("/ingestion/transcribe")
+async def ingestion_proxy(request: Request):
+    # Richiede ruolo operator (es. medico che invia audio)
+    return await proxy_request(request, "post", MICROSERVICES["ingestion"], "operator")
 
 
 """
