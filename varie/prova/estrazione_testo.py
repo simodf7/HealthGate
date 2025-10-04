@@ -5,8 +5,6 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 import os
 from tqdm import tqdm
 
-#os.environ["GOOGLE_API_KEY"] = "AIzaSyBuxrY6tmzNZhxxZxZKIjlsI2GBEwXpWMo"
-os.environ["GOOGLE_API_KEY"] = "AIzaSyALV5oqYTmoNAJ0S3H1q0Lw9YryWbN0qCo" #rita
 
 
 def clean_text(text: str) -> str:
