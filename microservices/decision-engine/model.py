@@ -1,10 +1,11 @@
 import chromadb
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
-import whisper
+import asyncio
 from langchain_google_genai import ChatGoogleGenerativeAI
 from config import API_KEY
 import os
+from rag_setup import graph_building
 
 # File in cui sono presenti i modelli per embedding e llm
 # e anche il vector store utilizzato
@@ -23,10 +24,23 @@ def load_llm(): # modello per la correzione delle trascrizioni
     return ChatGoogleGenerativeAI(model="gemini-2.0-flash")
 
 
-def load_vector_store(embedding_model, port:8010):
+def load_vector_store(embedding_model, port):
     client = chromadb.HttpClient(host="localhost", port=port, ssl=False)
     return Chroma(
         client=client,
-        collection_name="healthgate",
+        collection_name="collection_name",
         embedding_function=embedding_model,
     )
+
+async def load_all():
+    loop = asyncio.get_event_loop()
+    llm_task = loop.run_in_executor(None, load_llm)
+    embedding_task = loop.run_in_executor(None, load_embedding_model)
+
+    # aspetta entrambi in parallelo
+    llm, embedding_model = await asyncio.gather(llm_task, embedding_task)
+    vector_store = await loop.run_in_executor(None, load_vector_store, embedding_model, 8010)
+    graph = await loop.run_in_executor(None, graph_building, vector_store, llm)
+
+    return llm, embedding_model, vector_store, graph
+

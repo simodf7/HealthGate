@@ -171,6 +171,11 @@ async def ingestion_proxy(request: Request):
 async def signup_proxy(request: Request):
     return await proxy_request(request, "get", MICROSERVICES["decision"], "patient")
 
+@app.post("/llm/diagnose")
+async def signup_proxy(request: Request):
+    return await proxy_request(request, "post", MICROSERVICES["decision"], "patient")
+
+
 """
 # Routing dinamico
 @app.api_route("/users/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
