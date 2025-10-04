@@ -1,45 +1,75 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from contextlib import asynccontextmanager
 from typing import Dict
-import os
-from dotenv import load_dotenv
-load_dotenv()
+from model import load_all
+import json
+import re
+
+"""
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global embedding_model, llm, vector_store, graph
+    llm = load_llm()
+    embedding_model = load_embedding_model() 
+    vector_store = load_vector_store(embedding_model, port=8010)
+    graph = graph_building(vector_store, llm)
+    print("Modelli caricati correttamente.")
+    yield
+"""
 
 
-# importa il modulo che contiene tutta la logica Gemini
-from llm_module import create_client, extract_clinical_info  
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global embedding_model, llm, vector_store, graph
+    llm, embedding_model, vector_store, graph = await load_all()
+    print("Modelli caricati correttamente.")
+    yield
 
-app = FastAPI(title="LLM Service")
 
-# Recupera la API key di Gemini dall'ambiente
-API_KEY = os.getenv("GEMINI_API_KEY")
-if not API_KEY:
-    raise RuntimeError("Variabile GEMINI_API_KEY non trovata nelle variabili d'ambiente")
+
+app = FastAPI(title="LLM Service", lifespan=lifespan)
+
+
 
 # Schema input per la richiesta
 class ClinicalRequest(BaseModel):
-    text: str
+    storia: str
+    sintomi: str
+
+
 
 @app.get("/")
 def health():
     """Health check"""
-    return {"status": "LLM Service running"}
+    return {"status": "T'appost!! LLM Service running"}
 
 @app.get("/llm")
 def health_token():
-    """Testing >TOken check"""
+    """Testing >Oken check"""
     return {"status": "Token Check running"}
 
-@app.post("/llm/extract", response_model=Dict)
-async def extract(req: ClinicalRequest):
+
+
+@app.post("/llm/diagnose", response_model=Dict)
+async def diagnose(req: ClinicalRequest):
     """
     Endpoint che riceve un testo clinico e restituisce JSON strutturato
     dopo correzione, estrazione e validazione.
     """
     try:
-        # create_client ritorna la chiave API, usata da extract_clinical_info
-        client = create_client(API_KEY)
-        data = extract_clinical_info(client, req.text)
-        return data
+        response = graph.invoke({"sintomi": req.sintomi, "storia_paziente": req.storia})
+         
+        # Verifica che 'answer' sia presente e non None
+        raw_answer = response.get("answer")
+        print(raw_answer)
+
+        if not raw_answer:
+            # fallback in caso di risposta vuota o assente
+            return {"decisione": "N/A", "motivazione": "LLM non ha restituito dati"}
+        
+        answer_text = re.sub(r"^```json\s*|```$", "", raw_answer.strip(), flags=re.MULTILINE)
+    
+        return json.loads(answer_text)  # rimuove eventuali backticks
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

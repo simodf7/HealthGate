@@ -1,0 +1,100 @@
+from langchain.prompts import PromptTemplate
+from langchain_core.documents import Document
+from langgraph.graph import START, StateGraph
+from typing_extensions import List, TypedDict
+
+
+# Define state for application
+class State(TypedDict):
+    sintomi: str
+    storia_paziente: str
+    context: List[Document]
+    answer: str
+
+
+# Define application steps
+def retrieve(state: State, vector_store):
+    retrieved_docs = vector_store.similarity_search(state["sintomi"] + state['storia_paziente'], k=6)
+    print("\n\n--- RETRIEVED DOCS ---\n\n")
+    for doc in retrieved_docs:
+        print("Content: " +  doc.page_content + "\n")
+        print("Source: " + doc.metadata['source'] + "\n")
+        print("------------------------------------- + \n")
+
+
+    return {"context": retrieved_docs}
+
+
+def generate(state: State, llm):
+    #print("\n\n--- STATE ---\n\n")
+    #print("context: ", state['context'])
+    #print("sintomi: ", state['sintomi'])
+    #print("storia_paziente: ", state['storia_paziente'])
+
+    #print("\n\n-----\n\n")
+
+    docs_content = "\n\n".join("'" + doc.page_content + "'" for doc in state["context"])
+
+    print("\n\n--- DOCS CONTENT ---\n\n")
+    print(docs_content)
+    print("\n\n-----\n\n")
+
+
+    messages = prompt.invoke({"sintomi": state["sintomi"], "storia_paziente": state["storia_paziente"], "context": docs_content})
+    response = llm.invoke(messages, temperature=0)
+    return {"answer": response.content}
+
+
+prompt_template = """
+    Sei un assistente sanitario virtuale.
+
+    Un paziente ti fornisce informazioni sui suoi sintomi. 
+    Riceverai inoltre informazioni da un Retriever che ha accesso a linee guida ospedialiere ufficiali.
+    Inoltre sempre il retriever ti fornirà uno storico clinico del paziente, se presente.
+    
+    IMPORTANTE:
+    - Le tue decisioni devono basarsi **esclusivamente** sui documenti forniti dal Retriever.
+    - Non utilizzare conoscenze esterne o supposizioni personali.
+    
+    Il tuo compito è il seguente: 
+    - Classificare se il paziente deve recarsi al pronto soccorso immediatamente o se non è necessario.
+    - Fornire una motivazione concisa basata sui documenti forniti.
+    
+    L'input che ricevi è strutturato come segue:
+
+    Sintomi del paziente: {sintomi}
+
+    Storia clinica del paziente: {storia_paziente}
+    
+    Estatti da linee guida ufficiali relativi ai sintomi: {context}
+
+    Rispondi seguendo ESATTAMENTE con la struttura seguente in formato JSON.
+    
+    Answer: 
+    {{
+        "decisione": "Pronto soccorso necessario" o "Pronto soccorso non necessario",
+        "motivazione": "Breve spiegazione della decisione"
+    }}
+
+"""
+
+
+prompt = PromptTemplate(
+    template=prompt_template,
+    input_variables=["sintomi", "storia_paziente", "context"]
+)
+
+def graph_building(vector_store, llm):
+
+    def retrieve_step(state):
+        return retrieve(state, vector_store)
+    
+    def generate_step(state):
+        return generate(state, llm)
+        
+    graph_builder = StateGraph(State).add_sequence([retrieve_step, generate_step])
+    graph_builder.add_edge(START, "retrieve_step")
+    graph = graph_builder.compile()
+
+    return graph
+
