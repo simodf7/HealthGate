@@ -1,3 +1,9 @@
+"""
+[FRONTEND] signup.py
+
+Modulo per il signup.
+"""
+
 import streamlit as st
 import requests
 import datetime

@@ -55,7 +55,18 @@ async def login(data: PatientLoginRequest, db: AsyncSession = Depends(get_db)):
 
     token = create_access_token(patient.id, "patient")
     
-    return {"access_token": token, "token_type": "bearer"}
+    #return {"access_token": token, "token_type": "bearer"}
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "patient_id": patient.id,
+        "social_sec_number": patient.social_sec_number,
+        "firstname": patient.firstname,
+        "lastname": patient.lastname,
+        "birth_date": patient.birth_date.isoformat(),  # converto la data in stringa ISO
+        "sex": patient.sex,
+        "birth_place": patient.birth_place
+    }
 
 
 @app.post("/login/operator", response_model=dict)
@@ -70,7 +81,17 @@ async def login(data: OperatorLoginRequest, db: AsyncSession = Depends(get_db)):
 
     token = create_access_token(operator.id, "operator")
     
-    return {"access_token": token, "token_type": "bearer"}
+    # return {"access_token": token, "token_type": "bearer"}
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "operator_id": operator.id,
+        "med_register_code": operator.med_register_code,
+        "firstname": operator.firstname,
+        "lastname": operator.lastname,
+        "email": operator.email,
+        "phone_number": operator.phone_number
+    }
 
 
 

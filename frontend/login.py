@@ -1,7 +1,15 @@
+"""
+[FRONTEND] login.py
+
+Modulo per il login.
+"""
+
 # python -m uvicorn main:app  --reload --host 0.0.0.0 --port 8001
 
 import streamlit as st
 import requests
+import patient
+import operator
 
 def login_interface():
     """
@@ -49,8 +57,30 @@ def login_interface():
                 response = requests.post(url, json=payload)
                 if response.status_code == 200:
                     st.success("Login effettuato con successo!")
-                    st.session_state.view = "home"
-                    st.session_state.token = response.json().get("access_token")
+                    data = response.json() # Tutti i dati della return del login
+                    
+                    st.session_state.token = data.get("access_token")
+
+                    if st.session_state.view == "patient-login":
+                        st.session_state.firstname = data.get("firstname")
+                        st.session_state.lastname = data.get("lastname")
+                        st.session_state.birth_date = data.get("birth_date")
+                        st.session_state.sex = data.get("sex")
+                        st.session_state.birth_place = data.get("birth_place")
+
+                        st.session_state.view = "patient-logged"
+                        # patient.interface()
+                        st.rerun()
+                    elif st.session_state.view == "operator-login":
+                        st.session_state.med_register_code = data.get("med_register_code")
+                        st.session_state.firstname = data.get("firstname")
+                        st.session_state.lastname = data.get("lastname")
+                        st.session_state.email = data.get("email")
+                        st.session_state.phone_number = data.get("phone_number")
+
+                        st.session_state.view = "operator-logged"
+                        # operator.interface()
+                        st.rerun()
                 else:
                     error = response.json().get("detail", "Credenziali non valide. Riprova.")
                     st.session_state.login_error = (error, "🚨")
