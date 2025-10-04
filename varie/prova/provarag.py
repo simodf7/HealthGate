@@ -27,7 +27,7 @@ import re
 
 
 # Impostazione delle credenziali Google Cloud
-os.environ["GOOGLE_API_KEY"] = "AIzaSyBuxrY6tmzNZhxxZxZKIjlsI2GBEwXpWMo"
+
  
 
 
