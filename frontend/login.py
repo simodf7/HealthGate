@@ -10,12 +10,12 @@ def login_interface():
     @st.dialog("Login")
     def login_dialog():
         if st.session_state.view == "patient-login":
-            username = st.text_input("Codice Fiscale")
-            password = st.text_input("Password", type="password")
+            st.session_state.username = st.text_input("Codice Fiscale")
+            st.session_state.login_password = st.text_input("Password", type="password")
         else:
-            username = st.text_input("Codice Iscrizione Albo")
-            password = st.text_input("Password", type="password")
-        
+            st.session_state.username = st.text_input("Codice Iscrizione Albo")
+            st.session_state.login_password = st.text_input("Password", type="password")
+
         error_message = None
         error_icon = None
 
@@ -35,14 +35,14 @@ def login_interface():
             if st.session_state.view == "patient-login":
                 url = "http://localhost:8001/login/patient"
                 payload = {
-                    "social_sec_number": username,
-                    "password": password
+                    "social_sec_number": st.session_state.username,
+                    "password": st.session_state.login_password
                 }
             else:  # operator login
                 url = "http://localhost:8001/login/operator"
                 payload = {
-                    "med_register_code": username,
-                    "password": password
+                    "med_register_code": st.session_state.username,
+                    "password": st.session_state.login_password
                 }
 
             try:

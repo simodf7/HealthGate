@@ -1,5 +1,5 @@
 """
-[FRONTEND] main_page.py
+[FRONTEND] main.py
 
 Modulo principale per l'interfaccia utente di HealthGate.
 Gestisce l'autenticazione.
@@ -51,9 +51,13 @@ def initialize_session_state():
         st.session_state.firstname = ""
     if "lastname" not in st.session_state:
         st.session_state.lastname = ""
-    if "password" not in st.session_state:
+    if "username" not in st.session_state:
+        st.session_state.username = ""
+    if "login_password" not in st.session_state:
+        st.session_state.login_password = ""
+    if "signup_password" not in st.session_state:
         st.session_state.password = ""
-    if "confirm_password" not in st.session_state:
+    if "signup_confirm_password" not in st.session_state:
         st.session_state.confirm_password = ""
     
     # Generic
@@ -68,7 +72,7 @@ def initialize_session_state():
 
 # =================================
 
-def main_interface():
+def interface():
     """
     Funzione principale che gestisce l'interfaccia utente.
     Inizializza la pagina, imposta lo stile, gestisce la navigazione tra le viste e richiama i moduli appropriati.

@@ -1,7 +1,6 @@
 import streamlit as st
 import requests
 import datetime
-import main_page as mp
 import login
 
 today = datetime.date.today()
@@ -31,8 +30,8 @@ def signup_interface():
                 help="Devi avere almeno 18 anni per registrarti.")
             st.session_state.sex = st.selectbox("Sesso", ["M", "F"])
             st.session_state.birth_place = st.text_input("Luogo di nascita")
-            st.session_state.password = st.text_input("Password", type="password")
-            st.session_state.confirm_password = st.text_input("Conferma Password", type="password")
+            st.session_state.signup_password = st.text_input("Password", type="password")
+            st.session_state.signup_confirm_password = st.text_input("Conferma Password", type="password")
 
             if st.session_state.get("signup_error_paziente"):
                 error_message, error_icon = st.session_state.signup_error_paziente
@@ -87,8 +86,8 @@ def signup_interface():
             st.session_state.lastname = st.text_input("Cognome")
             st.session_state.email = st.text_input("Email")
             st.session_state.phone_number = st.text_input("Numero di telefono")
-            st.session_state.password = st.text_input("Password", type="password")
-            st.session_state.confirm_password = st.text_input("Conferma Password", type="password")
+            st.session_state.signup_password = st.text_input("Password", type="password")
+            st.session_state.signup_confirm_password = st.text_input("Conferma Password", type="password")
 
             if st.session_state.get("signup_error_operatore"):
                 error_message, error_icon = st.session_state.signup_error_operatore

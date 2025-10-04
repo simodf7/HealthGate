@@ -15,7 +15,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 frontend_path = os.path.join(current_dir, 'frontend')
 sys.path.append(frontend_path)
 
-import main_page as mp
+import main
 
 # Avvio dell'interfaccia principale
-mp.main_interface()
+main.interface()
