@@ -10,11 +10,11 @@ def login_interface():
     @st.dialog("Login")
     def login_dialog():
         if st.session_state.view == "patient-login":
-            st.session_state.username = st.text_input("Codice Fiscale")
-            st.session_state.login_password = st.text_input("Password", type="password")
-        else:
-            st.session_state.username = st.text_input("Codice Iscrizione Albo")
-            st.session_state.login_password = st.text_input("Password", type="password")
+            st.session_state.username = st.text_input("Codice Fiscale", key="login_patient_username")
+            st.session_state.login_password = st.text_input("Password", type="password", key="login_patient_password")
+        elif st.session_state.view == "operator-login":
+            st.session_state.username = st.text_input("Codice Iscrizione Albo", key="login_operator_username")
+            st.session_state.login_password = st.text_input("Password", type="password", key="login_operator_password")
 
         error_message = None
         error_icon = None
@@ -24,7 +24,7 @@ def login_interface():
             st.error(error_message, icon=error_icon)
             st.session_state.login_error = None
 
-        if st.button("Accedi"):
+        if st.button("Accedi", key="login_button"):
             # URL dell’API Gateway
             if st.session_state.view == "patient-login":
                 url = "http://localhost:8001/login/patient"

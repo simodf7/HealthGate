@@ -21,34 +21,35 @@ def signup_interface():
         error_icon = None
 
         if user_type == "Paziente":
-            st.session_state.firstname = st.text_input("Nome")
-            st.session_state.lastname = st.text_input("Cognome")
+            st.session_state.firstname = st.text_input("Nome", key="signup_patient_firstname")
+            st.session_state.lastname = st.text_input("Cognome", key="signup_patient_lastname")
             st.session_state.birth_date = st.date_input("Data di nascita",
                 value=maxDate,
                 max_value=maxDate, # Almeno 18 anni
                 min_value=datetime.date(1900, 1, 1),
-                help="Devi avere almeno 18 anni per registrarti.")
-            st.session_state.sex = st.selectbox("Sesso", ["M", "F"])
-            st.session_state.birth_place = st.text_input("Luogo di nascita")
-            st.session_state.signup_password = st.text_input("Password", type="password")
-            st.session_state.signup_confirm_password = st.text_input("Conferma Password", type="password")
+                help="Devi avere almeno 18 anni per registrarti.",
+                key="signup_patient_birth_date")
+            st.session_state.sex = st.selectbox("Sesso", ["M", "F"], key="signup_patient_sex")
+            st.session_state.birth_place = st.text_input("Luogo di nascita", key="signup_patient_birth_place")
+            st.session_state.signup_password = st.text_input("Password", type="password", key="signup_patient_password")
+            st.session_state.signup_confirm_password = st.text_input("Conferma Password", type="password", key="signup_patient_confirm_password")
 
             if st.session_state.get("signup_error_paziente"):
                 error_message, error_icon = st.session_state.signup_error_paziente
                 st.error(error_message, icon=error_icon)
                 st.session_state.signup_error_paziente = None
 
-            if st.button("Registrati come Paziente"):
+            if st.button("Registrati come Paziente", key="signup_patient_button"):
                 # Validazione campi
                 if not all([st.session_state.firstname,
                     st.session_state.lastname,
                     st.session_state.birth_date,
                     st.session_state.sex,
                     st.session_state.birth_place,
-                    st.session_state.password,
-                    st.session_state.confirm_password]):
+                    st.session_state.signup_password,
+                    st.session_state.signup_confirm_password]):
                     st.session_state.signup_error_paziente = ("Tutti i campi sono obbligatori!", "🚨")
-                elif st.session_state.password != st.session_state.confirm_password:
+                elif st.session_state.signup_password != st.session_state.signup_confirm_password:
                     st.session_state.signup_error_paziente = ("Le password non coincidono!", "🚨")
                 else:
                     # Payload da inviare al backend
@@ -58,7 +59,7 @@ def signup_interface():
                         "birth_date": st.session_state.birth_date.strftime("%Y-%m-%d"),
                         "sex": st.session_state.sex,
                         "birth_place": st.session_state.birth_place,
-                        "password": st.session_state.password
+                        "password": st.session_state.signup_password
                     }
 
                     try:
@@ -80,30 +81,30 @@ def signup_interface():
                     except Exception as e:
                         st.session_state.signup_error_paziente = (f"Errore di connessione: {e}", "🚨")
 
-        else:  # Operatore
-            st.session_state.med_register_code = st.text_input("Codice Albo Medico")
-            st.session_state.firstname = st.text_input("Nome")
-            st.session_state.lastname = st.text_input("Cognome")
-            st.session_state.email = st.text_input("Email")
-            st.session_state.phone_number = st.text_input("Numero di telefono")
-            st.session_state.signup_password = st.text_input("Password", type="password")
-            st.session_state.signup_confirm_password = st.text_input("Conferma Password", type="password")
+        elif user_type == "Operatore":  # Operatore
+            st.session_state.med_register_code = st.text_input("Codice Albo Medico", key="signup_operator_med_register_code")
+            st.session_state.firstname = st.text_input("Nome", key="signup_operator_firstname")
+            st.session_state.lastname = st.text_input("Cognome", key="signup_operator_lastname")
+            st.session_state.email = st.text_input("Email", key="signup_operator_email")
+            st.session_state.phone_number = st.text_input("Numero di telefono", key="signup_operator_phone_number")
+            st.session_state.signup_password = st.text_input("Password", type="password", key="signup_operator_password")
+            st.session_state.signup_confirm_password = st.text_input("Conferma Password", type="password", key="signup_operator_confirm_password")
 
             if st.session_state.get("signup_error_operatore"):
                 error_message, error_icon = st.session_state.signup_error_operatore
                 st.error(error_message, icon=error_icon)
                 st.session_state.signup_error_operatore = None
 
-            if st.button("Registrati come Operatore"):
+            if st.button("Registrati come Operatore", key="signup_operator_button"):
                 if not all([st.session_state.med_register_code,
                     st.session_state.firstname,
                     st.session_state.lastname,
                     st.session_state.email,
                     st.session_state.phone_number,
-                    st.session_state.password,
-                    st.session_state.confirm_password]):
+                    st.session_state.signup_password,
+                    st.session_state.signup_confirm_password]):
                     st.session_state.signup_error_operatore = ("Tutti i campi sono obbligatori.", "🚨")
-                elif st.session_state.password != st.session_state.confirm_password:
+                elif st.session_state.signup_password != st.session_state.signup_confirm_password:
                     st.session_state.signup_error_operatore = ("Le password non coincidono.", "🚨")
                 else:
                     payload = {
@@ -112,7 +113,7 @@ def signup_interface():
                         "lastname": st.session_state.lastname,
                         "email": st.session_state.email,
                         "phone_number": st.session_state.phone_number,
-                        "password": st.session_state.password
+                        "password": st.session_state.signup_password
                     }
 
                     try:

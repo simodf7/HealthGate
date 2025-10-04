@@ -56,10 +56,10 @@ def initialize_session_state():
     if "login_password" not in st.session_state:
         st.session_state.login_password = ""
     if "signup_password" not in st.session_state:
-        st.session_state.password = ""
+        st.session_state.signup_password = ""
     if "signup_confirm_password" not in st.session_state:
-        st.session_state.confirm_password = ""
-    
+        st.session_state.signup_confirm_password = ""
+
     # Generic
     if "view" not in st.session_state:
         st.session_state.view = "home"
