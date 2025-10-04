@@ -2,4 +2,4 @@
 
 chcp 65001 > nul
 
-start "HealthGate" python -m streamlit run "c:\HealthGate\HealthGate.py"
+start "HealthGate" python -m streamlit run ".\HealthGate.py"
