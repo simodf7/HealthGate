@@ -17,7 +17,7 @@ import re
 
 
 # Impostazione delle credenziali Google Cloud
-os.environ["GOOGLE_API_KEY"] = "AIzaSyBuxrY6tmzNZhxxZxZKIjlsI2GBEwXpWMo"
+
 
 if not os.environ.get("GOOGLE_API_KEY"):
   os.environ["GOOGLE_API_KEY"] = getpass.getpass("Enter API key for Google Gemini: ")
