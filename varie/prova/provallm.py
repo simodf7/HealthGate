@@ -2,8 +2,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage
 import os
  
-# Impostazione delle credenziali Google Cloud
-os.environ["GOOGLE_API_KEY"] = "AIzaSyBuxrY6tmzNZhxxZxZKIjlsI2GBEwXpWMo"
+
  
 # Funzione per correggere la trascrizione clinica
 def correct_transcription(transcription: str) -> str:
