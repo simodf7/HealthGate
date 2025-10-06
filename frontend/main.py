@@ -95,7 +95,7 @@ def interface():
     st.markdown("""
     <style>
     .main-header {
-        text-align: center;
+        text-align: left;
         color: #2E86AB;
         font-size: 3rem;
         font-weight: bold;
@@ -131,8 +131,14 @@ def interface():
     """, unsafe_allow_html=True)
 
     # Titolo principale e sottotitolo
-    st.markdown('<h1 class="main-header">🚑 HealthGate</h1>', unsafe_allow_html=True)
-    st.markdown('<p style="text-align: center; font-size: 1.2rem; color: #666; margin-bottom: 3rem;">Sistema intelligente per il pronto soccorso</p>', unsafe_allow_html=True)
+    col1_header, col2_header = st.columns([0.5,4])
+
+    with col1_header:
+        st.image("frontend/logo/logo-3.jpeg", width=100)
+
+    with col2_header:
+        st.markdown('<h1 class="main-header">🚑 HealthGate</h1>', unsafe_allow_html=True)
+        st.markdown('<p style="text-align: left; font-size: 1.2rem; color: #666; margin-bottom: 3rem;">Sistema intelligente per il pronto soccorso</p>', unsafe_allow_html=True)
 
     if st.session_state.patient_signup_success:
         st.toast(f"Registrazione Paziente avvenuta con successo: {st.session_state.firstname} {st.session_state.lastname}", icon="✅")
@@ -148,18 +154,18 @@ def interface():
         if st.button("Autenticati come Paziente"):
             print_debug("Utente ha cliccato Autenticati come Paziente")
             st.session_state.view = "patient-login"
-            login.login_interface()
+            st.rerun()
 
     with col2:
         st.header("Sei un Operatore Sanitario?")
         if st.button("Autenticati come Operatore Sanitario"):
             print_debug("Utente ha cliccato Autenticati come Operatore Sanitario")
             st.session_state.view = "operator-login"
-            login.login_interface()
+            st.rerun()
 
     with col3:
         st.header("Sei un nuovo utente?")
         if st.button("Registrati"):
             print_debug("Utente ha cliccato Registrati")
             st.session_state.view = "signup"
-            signup.signup_interface()
+            st.rerun()

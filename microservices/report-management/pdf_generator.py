@@ -245,7 +245,7 @@ def stampa_html_in_pdf(html_path, output_pdf):
             
             browser.close()
             
-        print(f"✅ PDF generato con successo: {output_pdf}")
+        # print(f"✅ PDF generato con successo: {output_pdf}")
         
     except Exception as e:
         print(f"❌ Errore durante la conversione HTML->PDF: {e}")

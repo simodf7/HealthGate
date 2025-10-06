@@ -5,6 +5,7 @@ Modulo per la schermata relativa al paziente.
 """
 
 import streamlit as st
+import main
 
 # === SELEZIONE MODALITÀ ===
 def interface():
@@ -15,6 +16,61 @@ def interface():
         page_icon="🚑",
         initial_sidebar_state="collapsed"
     )
+
+    # CSS personalizzato per migliorare l'aspetto grafico
+    st.markdown("""
+    <style>
+    .main-header {
+        text-align: left;
+        color: #2E86AB;
+        font-size: 3rem;
+        font-weight: bold;
+        margin-bottom: 2rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .stButton > button {
+        background: #52aa8a;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 0.6rem 1.5rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .stButton > button:hover {
+        background: #74c3a4;
+        color: #ffffff;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+    .home-button > button:hover {
+        background: #4fa070;
+    }
+    .proceed-button > button:hover {
+        background: #53e4ff;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # === BARRA SUPERIORE ===
+    col1, col2 = st.columns([3, 1])
+    with col2:
+        subcol1, subcol2 = st.columns([2, 1])
+        with subcol1:
+            if st.session_state.sex == "M":
+                st.markdown(f"Bentornato, **{st.session_state.firstname.upper()} {st.session_state.lastname.upper()}**!")
+            else:
+                st.markdown(f"Bentornata, **{st.session_state.firstname.upper()} {st.session_state.lastname.upper()}**!")
+        with subcol2:
+            if st.button("Logout"):
+                st.rerun()
+                main.interface()
+    
+    st.divider()
 
     input_mode = st.radio(
         "Scegli la modalità:",

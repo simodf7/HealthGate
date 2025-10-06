@@ -33,7 +33,7 @@ def login_interface():
             st.session_state.login_error = None
 
         if st.button("Accedi", key="login_button"):
-            # URL dell’API Gateway
+            # URL dell'API Gateway
             if st.session_state.view == "patient-login":
                 url = "http://localhost:8001/login/patient"
             else:
@@ -56,7 +56,6 @@ def login_interface():
             try:
                 response = requests.post(url, json=payload)
                 if response.status_code == 200:
-                    st.success("Login effettuato con successo!")
                     data = response.json() # Tutti i dati della return del login
                     
                     st.session_state.token = data.get("access_token")
@@ -69,8 +68,6 @@ def login_interface():
                         st.session_state.birth_place = data.get("birth_place")
 
                         st.session_state.view = "patient-logged"
-                        # patient.interface()
-                        st.rerun()
                     elif st.session_state.view == "operator-login":
                         st.session_state.med_register_code = data.get("med_register_code")
                         st.session_state.firstname = data.get("firstname")
@@ -79,12 +76,21 @@ def login_interface():
                         st.session_state.phone_number = data.get("phone_number")
 
                         st.session_state.view = "operator-logged"
-                        # operator.interface()
-                        st.rerun()
+                    
+                    # Chiudi il dialog impostando un flag
+                    st.session_state.login_success = True
+                    st.rerun()
                 else:
                     error = response.json().get("detail", "Credenziali non valide. Riprova.")
                     st.session_state.login_error = (error, "🚨")
+                    st.rerun()
             except Exception as e:
                 st.session_state.login_error = (f"Errore di connessione: {e}", "🚨")
+                st.rerun()
 
-    login_dialog()
+    # Mostra il dialog solo se non c'è stato un login con successo
+    if not st.session_state.get("login_success", False):
+        login_dialog()
+    else:
+        # Reset del flag dopo il rerun
+        st.session_state.login_success = False
