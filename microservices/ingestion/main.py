@@ -2,9 +2,9 @@ import os
 from datetime import datetime
 from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from contextlib import asynccontextmanager
-from fastapi.responses import JSONResponse
 from ingest_ops import transcribe_audio_file, save_transcription, correct_transcription
 from model import load_model_stt, load_model_correction
+from adapter import DecisionAdapter
 
 
 
@@ -71,16 +71,24 @@ async def ingest(
         # Salvataggio transcript (usiamo timestamp come nome se non è audio)
         base_filename = os.path.splitext(file.filename)[0] if file else f"manual_{datetime.now().strftime('%Y%m%d%H%M%S')}"
         save_transcription(corrected_text, base_filename)
- 
-        response = {
+    
+       
+
+        output_ingest = {
             "input_type": "audio" if file else "text",
             "filename": file.filename if file else None,
             "corrected_text": corrected_text,
             "timestamp": datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
         }
 
+        # vedi nel file adapter perchè 
+        adapter = DecisionAdapter()
+        response = await adapter.send(output_ingest)
+
         print("Response:", response)    
         return response
  
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Errore durante l'ingestione: {e}")
+    
+

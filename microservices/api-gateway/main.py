@@ -23,7 +23,7 @@ in modo semplice, un po' come requests, ma con alcune differenze:
 # creiamo un client httpx.AsyncClient allo startup 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.state.client = httpx.AsyncClient()
+    app.state.client = httpx.AsyncClient(timeout=20.0)
     yield  # to be executed at shutdown
     await app.state.client.aclose()
  
@@ -84,14 +84,20 @@ async def verify_jwt_with_role(request: Request, required_role: str):
 # Funzione di proxy verso i microservizi
 async def proxy_request(request: Request, method: str, service_url: str, role: str = None):
     
-    path = request.url.path
+    target_path = request.url.path
     
-    if not path.startswith(("/login","/signup")):
+    if not target_path.startswith(("/login","/signup")):
         # await verify_jwt(request)
         await verify_jwt_with_role(request, role)
 
-    url = f"{service_url}{request.url.path}"  # concateniamo con l'url del microservizio es. /localhost:8001
+    if target_path.startswith("/diagnose"): # da vedere se ci piace
+        target_path = "/ingestion"   # localhost:8000/diagnose ->> localhost:8002/ingestion
 
+    # localhost:8000/ingestion ->>   localhost:8002/ingestion
+
+    url = f"{service_url}{target_path}"  # concateniamo con l'url del microservizio es. /localhost:8001
+
+  
 
     """
     Esempio: 
@@ -122,7 +128,11 @@ async def proxy_request(request: Request, method: str, service_url: str, role: s
         headers.pop("Authorization", None)  # il microservizio non ha bisogno del token
 
     # Richiesta al microservizio
-    response = await app.state.client.request(method, url, content=body, headers=headers)
+    try:
+        response = await app.state.client.request(method, url, content=body, headers=headers)
+    except httpx.ReadTimeout:
+        raise HTTPException(status_code=504, detail="Timeout durante la comunicazione")
+
  
     return Response(content=response.content, status_code=response.status_code, headers=response.headers)
  
@@ -157,7 +167,7 @@ async def signup_proxy(request: Request):
     return await proxy_request(request, "post", MICROSERVICES["auth"])
 
 
-
+"""  Uniti in un'unica rotta
 
 ## Ingestion service route
 @app.post("/ingestion")
@@ -175,14 +185,10 @@ async def signup_proxy(request: Request):
 async def signup_proxy(request: Request):
     return await proxy_request(request, "post", MICROSERVICES["decision"], "patient")
 
+"""
 
-"""
-# Routing dinamico
-@app.api_route("/users/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
-async def users_proxy(path: str, request: Request, user=Depends(get_current_user)):
-    return await proxy_request(request, MICROSERVICES["users"])
- 
-@app.api_route("/orders/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
-async def orders_proxy(path: str, request: Request, user=Depends(get_current_user)):
-    return await proxy_request(request, MICROSERVICES["orders"])
-"""
+
+
+@app.post("/diagnose")  # ingest richiamerà decision
+async def diagnose_proxy(request: Request):
+    return await proxy_request(request, "post", MICROSERVICES["ingest"], "patient")
