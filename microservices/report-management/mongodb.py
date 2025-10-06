@@ -10,6 +10,7 @@ from pg_db import get_patient_anagrafica
 load_dotenv()
 MONGO_URI = os.getenv("MONGO_URI")
 MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "healthgate_db")
+
 try:
     client = MongoClient(
         MONGO_URI,
