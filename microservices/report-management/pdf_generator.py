@@ -262,7 +262,7 @@ def genera_scheda_pdf_da_json(dati_json, output_pdf=None, template_path=template
     # Prepara nome paziente per i fallback
     lastname = dati_json.get('lastname', '')
     firstname = dati_json.get('firstname', '')
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
 
     # Costruzione del nome PDF di default (corretto con .pdf)
     if lastname and firstname:
