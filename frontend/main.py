@@ -10,6 +10,8 @@ import streamlit as st
 from datetime import datetime
 import login
 import signup
+from config import CSS_STYLE, NAVBAR_PAGES, NAVBAR_STYLES
+from streamlit_navigation_bar import st_navbar
 
 # Percorsi ai moduli
 sys.path.append('./frontend')
@@ -94,47 +96,15 @@ def interface():
     initialize_session_state() # Inizializza tutte le variabili di stato
 
     print_debug("Configurazione pagina Streamlit completata")
-    
+
     # CSS personalizzato per migliorare l'aspetto grafico
-    '''
-    st.markdown("""
-    <style>
-    .main-header {
-        text-align: left;
-        color: #2E86AB;
-        font-size: 3rem;
-        font-weight: bold;
-        margin-bottom: 2rem;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-    }
+    st.markdown(CSS_STYLE, unsafe_allow_html=True)
 
-    .stButton > button {
-        background: #52aa8a;
-        color: white;
-        border: none;
-        border-radius: 10px;
-        padding: 0.6rem 1.5rem;
-        font-size: 1.1rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    }
-
-    .stButton > button:hover {
-        background: #74c3a4;
-        color: #ffffff;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-    }
-    .home-button > button:hover {
-        background: #4fa070;
-    }
-    .proceed-button > button:hover {
-        background: #53e4ff;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-    '''
+    # Gestione ritorno alla home
+    if st.session_state.view in ["patient-login", "operator-login", "signup"]:
+        if st.button("← Torna alla Home", key="back_to_home"):
+            st.session_state.view = "home"
+            st.rerun()
 
     # Titolo principale e sottotitolo
     col1_header, col2_header = st.columns([0.5,4])
@@ -143,9 +113,10 @@ def interface():
         st.image("frontend/logo/logo-3.jpeg", width=100)
 
     with col2_header:
-        st.markdown('<h1 class="main-header">🚑 HealthGate</h1>', unsafe_allow_html=True)
+        st.markdown('<h1 class="main-header">HealthGate</h1>', unsafe_allow_html=True)
         st.markdown('<p style="text-align: left; font-size: 1.2rem; color: #666; margin-bottom: 3rem;">Sistema intelligente per il pronto soccorso</p>', unsafe_allow_html=True)
 
+    # Gestione toast per successo registrazione/login
     if st.session_state.patient_signup_success:
         st.toast(f"Registrazione Paziente avvenuta con successo: {st.session_state.firstname} {st.session_state.lastname}", icon="✅")
         st.session_state.patient_signup_success = False  # Resetto il FLAG
@@ -159,9 +130,38 @@ def interface():
         st.toast(f"Rieccoti, {st.session_state.firstname} {st.session_state.lastname}!", icon="✅")
         st.session_state.operator_login_success = False  # Resetto il FLAG
 
-    # Gestione login
+    # Mostra interfaccia home solo se non siamo in login/signup
+    if st.session_state.view == "home":
+        col1, col2, col3 = st.columns([1.2,1.5,1])
+
+        with col1:
+            st.header("Sei un Paziente?")
+            if st.button("Autenticati come Paziente"):
+                print_debug("Utente ha cliccato Autenticati come Paziente")
+                st.session_state.view = "patient-login"
+                st.rerun()
+
+        with col2:
+            st.header("Sei un Operatore Sanitario?")
+            if st.button("Autenticati come Operatore Sanitario"):
+                print_debug("Utente ha cliccato Autenticati come Operatore Sanitario")
+                st.session_state.view = "operator-login"
+                st.rerun()
+
+        with col3:
+            st.header("Sei un nuovo utente?")
+            if st.button("Registrati"):
+                print_debug("Utente ha cliccato Registrati")
+                st.session_state.view = "signup"
+                st.rerun()
+
+    # Gestione login (senza dialog)
     if st.session_state.view in ["patient-login", "operator-login"]:
         login.login_interface()
+    
+    # Gestione signup
+    if st.session_state.view == "signup":
+        signup.signup_interface()
     
     # Gestione viste dopo login
     if st.session_state.view == "patient-logged":
@@ -172,26 +172,3 @@ def interface():
         import operator
         operator.interface()
         return
-
-    col1, col2, col3 = st.columns([1.2,1.5,1])
-
-    with col1:
-        st.header("Sei un Paziente?")
-        if st.button("Autenticati come Paziente"):
-            print_debug("Utente ha cliccato Autenticati come Paziente")
-            st.session_state.view = "patient-login"
-            st.rerun()
-
-    with col2:
-        st.header("Sei un Operatore Sanitario?")
-        if st.button("Autenticati come Operatore Sanitario"):
-            print_debug("Utente ha cliccato Autenticati come Operatore Sanitario")
-            st.session_state.view = "operator-login"
-            st.rerun()
-
-    with col3:
-        st.header("Sei un nuovo utente?")
-        if st.button("Registrati"):
-            print_debug("Utente ha cliccato Registrati")
-            st.session_state.view = "signup"
-            st.rerun()
