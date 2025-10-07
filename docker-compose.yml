@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+  api-gateway:
+    build: microservices/api-gateway
+    container_name: api-gateway
+    ports:
+      - "8000:8000"
+    env_file:
+      - microservices/api-gateway/.env
+    depends_on:
+      - auth
+      - auth-db
+    networks:
+      - microservices-network
+
+  auth:
+    build: microservices/auth
+    container_name: auth
+    ports:
+      - "8001:8001"
+    env_file:
+      - microservices/auth/.env
+    depends_on:
+      - auth-db
+    networks:
+      - microservices-network
+
+  auth-db:
+    image: postgres:15
+    container_name: auth-db
+    env_file:
+      - microservices/auth/.env   # qui metti solo le variabili DB del database
+    ports:
+      - "5432:5432"
+    volumes:
+      - auth-db-data:/var/lib/postgresql/data
+    networks:
+      - microservices-network
+
+volumes:
+  auth-db-data:
+
+networks:
+  microservices-network:
+    driver: bridge

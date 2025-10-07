@@ -30,3 +30,5 @@ varie/*.pdf
 
 chroma/
 linee_indirizzo.txt
+venv/
+venv_auth/
