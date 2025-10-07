@@ -6,6 +6,12 @@ Modulo per la schermata relativa al paziente.
 
 import streamlit as st
 import main
+import os
+from datetime import datetime
+
+# Definisci le cartelle per audio e trascrizioni
+INPUT_FOLDER = "./input_files"
+TRANSCRIPTS_FOLDER = "./transcripts"
 
 # === SELEZIONE MODALITÀ ===
 def interface():
@@ -17,7 +23,6 @@ def interface():
         initial_sidebar_state="collapsed"
     )
 
-    # CSS personalizzato per migliorare l'aspetto grafico
     st.markdown("""
     <style>
     .main-header {
@@ -99,22 +104,8 @@ def interface():
 
     if audio_data and not st.session_state.get("audio_path"):
 
-        os.makedirs(AUDIO_FOLDER, exist_ok=True)
-        os.makedirs(TRANSCRIPTS_FOLDER, exist_ok=True)
-
-        '''
-        # Genera nome file con timestamp ed estensione appropriata
-        timestamp = datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
-        if audio_mode == "📁 Carica file audio":
-            # Mantieni il nome originale del file caricato
-            original_name = audio_data.name.split(".")[0]
-            st.session_state.audio_filename = f"{timestamp}_{original_name}{file_extension}"
-        else:
-            st.session_state.audio_filename = f"{timestamp}{file_extension}"
-            
-        audio_path = os.path.join(AUDIO_FOLDER, st.session_state.audio_filename)
-        '''
-        
+        os.makedirs(INPUT_FOLDER, exist_ok=True)
+        os.makedirs(TRANSCRIPTS_FOLDER, exist_ok=True)        
         
         # Svuota lo stato precedente per sicurezza
         st.session_state.audio_uploaded = False
@@ -125,7 +116,7 @@ def interface():
         audio_filename = f"{timestamp}{file_extension}"
         json_filename = f"{timestamp}.json"
         # Crea entrambi i percorsi completi
-        audio_path = os.path.join(AUDIO_FOLDER, audio_filename)
+        audio_path = os.path.join(INPUT_FOLDER, audio_filename)
         json_path = os.path.join(TRANSCRIPTS_FOLDER, json_filename)
 
             # Salva il file audio
@@ -139,7 +130,7 @@ def interface():
             st.session_state.paths_set = True
                 
             # Mostra informazioni sul file
-            if audio_mode == "📁 Carica file audio":
+            if input_mode == "📁 Carica file audio":
                 st.success(f"✅ File '{audio_data.name}' caricato correttamente!")
             else:
                 st.success("✅ Registrazione salvata correttamente!")

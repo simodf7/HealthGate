@@ -25,6 +25,8 @@ def initialize_session_state():
     # Patient
     if "patient_signup_success" not in st.session_state:
         st.session_state.patient_signup_success = False
+    if "patient_login_success" not in st.session_state:
+        st.session_state.patient_login_success = False
     if "social_sec_number" not in st.session_state:
         st.session_state.social_sec_number = ""
     if "med_register_code" not in st.session_state:
@@ -37,14 +39,16 @@ def initialize_session_state():
         st.session_state.birth_place = ""
 
     # Operator
+    if "operator_signup_success" not in st.session_state:
+        st.session_state.operator_signup_success = False
+    if "operator_login_success" not in st.session_state:
+        st.session_state.operator_login_success = False
     if "med_register_code" not in st.session_state:
         st.session_state.med_register_code = ""
     if "email" not in st.session_state:
         st.session_state.email = ""
     if "phone_number" not in st.session_state:
         st.session_state.phone_number = ""
-    if "operator_signup_success" not in st.session_state:
-        st.session_state.operator_signup_success = False
 
     # Patient & Operator
     if "firstname" not in st.session_state:
@@ -92,43 +96,6 @@ def interface():
     print_debug("Configurazione pagina Streamlit completata")
     
     # CSS personalizzato per migliorare l'aspetto grafico
-    st.markdown("""
-    <style>
-    .main-header {
-        text-align: left;
-        color: #2E86AB;
-        font-size: 3rem;
-        font-weight: bold;
-        margin-bottom: 2rem;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-    }
-
-    .stButton > button {
-        background: #52aa8a;
-        color: white;
-        border: none;
-        border-radius: 10px;
-        padding: 0.6rem 1.5rem;
-        font-size: 1.1rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    }
-
-    .stButton > button:hover {
-        background: #74c3a4;
-        color: #ffffff;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-    }
-    .home-button > button:hover {
-        background: #4fa070;
-    }
-    .proceed-button > button:hover {
-        background: #53e4ff;
-    }
-    </style>
-    """, unsafe_allow_html=True)
 
     # Titolo principale e sottotitolo
     col1_header, col2_header = st.columns([0.5,4])
@@ -146,6 +113,26 @@ def interface():
     elif st.session_state.operator_signup_success:
         st.toast(f"Registrazione Operatore avvenuta con successo: {st.session_state.firstname} {st.session_state.lastname}", icon="✅")
         st.session_state.operator_signup_success = False  # Resetto il FLAG
+    elif st.session_state.patient_login_success:
+        st.toast(f"Rieccoti, {st.session_state.firstname} {st.session_state.lastname}!", icon="✅")
+        st.session_state.patient_login_success = False  # Resetto il FLAG
+    elif st.session_state.operator_login_success:
+        st.toast(f"Rieccoti, {st.session_state.firstname} {st.session_state.lastname}!", icon="✅")
+        st.session_state.operator_login_success = False  # Resetto il FLAG
+
+    # Gestione login
+    if st.session_state.view in ["patient-login", "operator-login"]:
+        login.login_interface()
+    
+    # Gestione viste dopo login
+    if st.session_state.view == "patient-logged":
+        import patient
+        patient.interface()
+        return
+    elif st.session_state.view == "operator-logged":
+        import operator
+        operator.interface()
+        return
 
     col1, col2, col3 = st.columns([1.2,1.5,1])
 

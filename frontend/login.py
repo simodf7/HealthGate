@@ -68,6 +68,9 @@ def login_interface():
                         st.session_state.birth_place = data.get("birth_place")
 
                         st.session_state.view = "patient-logged"
+
+                        # Chiudi il dialog impostando un flag
+                        st.session_state.patient_login_success = True
                     elif st.session_state.view == "operator-login":
                         st.session_state.med_register_code = data.get("med_register_code")
                         st.session_state.firstname = data.get("firstname")
@@ -77,8 +80,9 @@ def login_interface():
 
                         st.session_state.view = "operator-logged"
                     
-                    # Chiudi il dialog impostando un flag
-                    st.session_state.login_success = True
+                        # Chiudi il dialog impostando un flag
+                        st.session_state.operator_login_success = True
+                        
                     st.rerun()
                 else:
                     error = response.json().get("detail", "Credenziali non valide. Riprova.")
@@ -89,8 +93,9 @@ def login_interface():
                 st.rerun()
 
     # Mostra il dialog solo se non c'è stato un login con successo
-    if not st.session_state.get("login_success", False):
+    if not st.session_state.get("patient_login_success", False) and not st.session_state.get("operator_login_success", False):
         login_dialog()
     else:
         # Reset del flag dopo il rerun
-        st.session_state.login_success = False
+        st.session_state.patient_login_success = False
+        st.session_state.operator_login_success = False
