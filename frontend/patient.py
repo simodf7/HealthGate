@@ -35,10 +35,7 @@ def interface():
     with col2:
         subcol1, subcol2 = st.columns([2, 1])
         with subcol1:
-            if st.session_state.sex == "M":
-                st.markdown(f"Bentornato, **{st.session_state.firstname.upper()} {st.session_state.lastname.upper()}**!")
-            else:
-                st.markdown(f"Bentornata, **{st.session_state.firstname.upper()} {st.session_state.lastname.upper()}**!")
+            st.markdown(f"Ciao, **{st.session_state.firstname.upper()} {st.session_state.lastname.upper()}**!")
         with subcol2:
             if st.button("Logout"):
                 st.rerun()
@@ -52,26 +49,28 @@ def interface():
         horizontal=True
     )
 
-    audio_data = None
+    input_data = None
 
     if input_mode == "🎙️ Registra audio":
         # === REGISTRAZIONE AUDIO ===
-        audio_data = st.audio_input(st.session_state.firstname + ", registra l'audio", label_visibility="visible")
+        input_data = st.audio_input(st.session_state.firstname + ", registra l'audio", label_visibility="visible")
         file_extension = ".wav"
         
     elif input_mode == "📁 Carica file audio":
         # === CARICAMENTO FILE AUDIO ===
-        audio_data = st.file_uploader(
+        input_data = st.file_uploader(
             st.session_state.firstname + ", carica un file audio",
             type=["wav", "mp3", "m4a", "ogg", "flac"],
             help="Formati supportati: WAV, MP3, M4A, OGG, FLAC"
         )
-        if audio_data:
-            file_extension = "." + audio_data.name.split(".")[-1].lower()
+        if input_data:
+            file_extension = "." + input_data.name.split(".")[-1].lower()
+
     elif input_mode == "🖊️ Trascrivi sintomi":
+        # === CARICAMENTO TESTO SCRITTO ===
         st.session_state.transcription_text = st.text_area(st.session_state.firstname + ", trascrivi qui i tuoi sintomi", height="content")
 
-    if audio_data and not st.session_state.get("audio_path"):
+    if input_data and not st.session_state.get("audio_path"):
 
         os.makedirs(INPUT_FOLDER, exist_ok=True)
         os.makedirs(TRANSCRIPTS_FOLDER, exist_ok=True)        
@@ -91,7 +90,7 @@ def interface():
             # Salva il file audio
         try:
             with open(audio_path, "wb") as f:
-                f.write(audio_data.getvalue())
+                f.write(input_data.getvalue())
             st.session_state.audio_path = audio_path
             st.session_state.json_path = json_path 
             st.session_state.audio_filename = audio_filename
@@ -100,7 +99,7 @@ def interface():
                 
             # Mostra informazioni sul file
             if input_mode == "📁 Carica file audio":
-                st.success(f"✅ File '{audio_data.name}' caricato correttamente!")
+                st.success(f"✅ File '{input_data.name}' caricato correttamente!")
             else:
                 st.success("✅ Registrazione salvata correttamente!")
                     

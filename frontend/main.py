@@ -102,7 +102,7 @@ def interface():
 
     # Gestione ritorno alla home
     if st.session_state.view in ["patient-login", "operator-login", "signup"]:
-        if st.button("← Torna alla Home", key="back_to_home"):
+        if st.button("Torna alla Home", key="back_to_home"):
             st.session_state.view = "home"
             st.rerun()
 
@@ -110,12 +110,14 @@ def interface():
     col1_header, col2_header = st.columns([0.5,4])
 
     with col1_header:
-        st.image("frontend/logo/logo-3.jpeg", width=100)
+        st.image("frontend/logo/logo-3.jpeg", width=95)
 
     with col2_header:
         st.markdown('<h1 class="main-header">HealthGate</h1>', unsafe_allow_html=True)
         st.markdown('<p style="text-align: left; font-size: 1.2rem; color: #666; margin-bottom: 3rem;">Sistema intelligente per il pronto soccorso</p>', unsafe_allow_html=True)
 
+    st.divider()
+    
     # Gestione toast per successo registrazione/login
     if st.session_state.patient_signup_success:
         st.toast(f"Registrazione Paziente avvenuta con successo: {st.session_state.firstname} {st.session_state.lastname}", icon="✅")

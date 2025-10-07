@@ -29,14 +29,14 @@ CSS_STYLE = """
     font-size: 1.1rem;
     font-weight: 600;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
 
 .stButton > button:hover {
-    background: #74c3a4;
+    background: #05a0e3;
     color: #ffffff;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 15px rgba(0,0,0,0.3);
 }
 </style>
 """
