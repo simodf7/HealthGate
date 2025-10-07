@@ -8,6 +8,7 @@ import streamlit as st
 import main
 import os
 from datetime import datetime
+from config import CSS_STYLE
 
 # Definisci le cartelle per audio e trascrizioni
 INPUT_FOLDER = "./input_files"
@@ -22,6 +23,12 @@ def interface():
         page_icon="🚑",
         initial_sidebar_state="collapsed"
     )
+
+    st.markdown(CSS_STYLE, unsafe_allow_html=True)
+
+    if st.session_state.patient_login_success:
+        st.toast(f"Rieccoti, {st.session_state.firstname} {st.session_state.lastname}!", icon="✅")
+        st.session_state.patient_login_success = False  # Resetto il FLAG
 
     # === BARRA SUPERIORE ===
     col1, col2 = st.columns([3, 1])

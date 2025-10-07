@@ -3,20 +3,26 @@
 from fastapi import FastAPI, HTTPException, status, Header
 from pydantic import BaseModel
 from typing import Dict, List, Optional
-from mongodb import connect_db, get_db
+import mongodb
 from contextlib import asynccontextmanager
-from mongodb import reports, cerca_paziente_per_codice_fiscale
+from pg_db import get_patient_anagrafica
 from pdf_generator import genera_scheda_pdf_da_json
 
 
 # ================== MODELLI PYDANTIC ==================
 
-class GeneratePDFRequest(BaseModel):
+class CreateReportRequest(BaseModel):
     social_sec_number: str
-    firstname: Optional[str] = None
-    lastname: Optional[str] = None
-    birth_date: Optional[str] = None
-    sex: Optional[str] = None
+    date: str  # data del report
+    diagnosi: Optional[str] = None
+    sintomi: Optional[str] = None
+    trattamento: Optional[str] = None
+
+
+class CreateReportResponse(BaseModel):
+    success: bool
+    report_id: Optional[str] = None
+    error: Optional[str] = None
 
 
 class GeneratePDFResponse(BaseModel):
@@ -31,8 +37,8 @@ class GeneratePDFResponse(BaseModel):
 async def lifespan(app: FastAPI):
     # Qui potresti inizializzare connessioni se necessario
     global db
-    client = await connect_db()
-    db = await get_db(client)
+    client = await mongodb.connect_db()
+    db = await mongodb.get_db(client)
     yield  # to be executed at shutdown
     print("🛑 Report Management Service terminato")
 
@@ -51,37 +57,70 @@ async def health():
 # route per ottenere tutti i report di un paziente
 @app.get("/reports/{patient_id}", response_model = List[Dict])
 async def get_reports(patient_id: int):
-    
-    ## SE PUOI IMPLEMENTA UNA FUNZ SIMILE A CERCA PER CODICE FISCALE, MA CON L'ID 
-
-    ## GET_REPORTS_BY_PATIENT 
-
-    return reports 
+    return mongodb.get_reports_by_patient(db, patient_id) 
 
 
-# route per ottenere tutti i report di un paziente con il codice fiscale (RICHIAMATO DALL'OPERATORE)
-@app.get("/reports/{social_sec_number}", response_model = List[Dict])
-async def get_reports():
-    
-    ## GET_REPORTS_BY_PATIENT 
-
-    return reports 
-
-
-
-# route per generare un nuovo report 
-@app.post("/report", response_model=GeneratePDFResponse)
-async def generate_report(
-    data: GeneratePDFRequest,
+# route per creare un nuovo report (solo dati clinici + CF)
+@app.post("/report", response_model=CreateReportResponse)
+async def create_report(
+    data: CreateReportRequest,
     x_user_id: Optional[str] = Header(None),
     x_user_role: Optional[str] = Header(None)
 ):
     """
-    Genera un PDF del report paziente dato il codice fiscale.
-    I dati anagrafici possono essere forniti nella richiesta o recuperati da MongoDB.
+    Crea un nuovo report clinico salvando solo i dati clinici e il codice fiscale.
+    NON salva i dati anagrafici.
     
     Args:
-        data: Richiesta contenente social_sec_number e opzionalmente dati anagrafici
+        data: Richiesta contenente social_sec_number, data, diagnosi, sintomi, trattamento
+        x_user_id: ID utente dal gateway (opzionale)
+        x_user_role: Ruolo utente dal gateway (opzionale)
+    
+    Returns:
+        CreateReportResponse con success, report_id o error
+    """
+    try:
+        print(f"📝 Creazione report per CF: {data.social_sec_number}")
+        
+        # Prepara i dati del report (solo dati clinici + CF)
+        report_data = {
+            "social_sec_number": data.social_sec_number,
+            "date": data.date,
+            "diagnosi": data.diagnosi,
+            "sintomi": data.sintomi,
+            "trattamento": data.trattamento
+        }
+        
+        # Salva il report in MongoDB
+        report_id = mongodb.save_report(patient_id, db, report_data)
+        
+        print(f"✅ Report creato con ID: {report_id}")
+        return CreateReportResponse(
+            success=True,
+            report_id=report_id
+        )
+            
+    except Exception as e:
+        print(f"❌ Errore durante la creazione del report: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Errore interno: {str(e)}"
+        )
+
+
+# route per generare il PDF di un report esistente
+@app.get("/report/pdf/{report_id}", response_model=GeneratePDFResponse)
+async def generate_report_pdf(
+    report_id: str,
+    x_user_id: Optional[str] = Header(None),
+    x_user_role: Optional[str] = Header(None)
+):
+    """
+    Genera un PDF per un report esistente, unendo i dati clinici del report 
+    con i dati anagrafici da PostgreSQL.
+    
+    Args:
+        report_id: ID del report MongoDB
         x_user_id: ID utente dal gateway (opzionale)
         x_user_role: Ruolo utente dal gateway (opzionale)
     
@@ -89,40 +128,37 @@ async def generate_report(
         GeneratePDFResponse con success, pdf_path o error
     """
     try:
-        print(f"🔍 Ricerca paziente con codice fiscale: {data.social_sec_number}")
+        print(f"🔍 Ricerca report con ID: {report_id}")
         
-        # Cerca il paziente in MongoDB
-        paziente = cerca_paziente_per_codice_fiscale(data.social_sec_number)
+        # Recupera il report da MongoDB
+        report = get_report_by_id(db, report_id)
         
-        if not paziente:
+        if not report:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Nessun paziente trovato con codice fiscale {data.social_sec_number}"
+                detail=f"Report non trovato con ID {report_id}"
             )
         
-        # Sovrascrivi i dati anagrafici se forniti nella richiesta
-        if data.firstname:
-            paziente['firstname'] = data.firstname
-        if data.lastname:
-            paziente['lastname'] = data.lastname
-        if data.birth_date:
-            paziente['birth_date'] = data.birth_date
-        if data.sex:
-            paziente['sex'] = data.sex
+        print(f"✅ Report trovato per CF: {report.get('social_sec_number')}")
         
-        print(f"✅ Paziente trovato: {paziente.get('firstname', '')} {paziente.get('lastname', '')}")
+        # Recupera i dati anagrafici da PostgreSQL usando il codice fiscale
+        # Assumendo che pg_db abbia una funzione per cercare per CF
+        # Se non esiste, dovrai adattare questa parte
+        patient_id = report.get('patient_id')  # se hai salvato anche patient_id
+        if patient_id:
+            anagrafica = get_patient_anagrafica(patient_id)
+            if anagrafica:
+                # Unisci anagrafica e dati del report
+                dati_completi = {**anagrafica, **report}
+            else:
+                dati_completi = report
+        else:
+            # Se non hai patient_id, usa solo i dati del report
+            dati_completi = report
         
-
-        ## CARICA IN MONGODB IL REPORT; QUI NON TI DEVI PREOCCUPARE DEI DATI ANAGRAFICI.
-        ## DEVI SOLO CARICARE SINTOMI ETC.
-
-        ## SOLO NELL'ALTRA ROUTE DI GENERAZIONE PDF, DEVI CHIAMARE LA FUNZ SUCCESSIVA
-
-
-
         # Genera il PDF
         risultato = genera_scheda_pdf_da_json(
-            dati_json=paziente, 
+            dati_json=dati_completi, 
             mantieni_html=False
         )
         
@@ -148,12 +184,8 @@ async def generate_report(
             detail=f"Errore interno: {str(e)}"
         )
 
-# route per ottenere il pdf di un report
-@app.get("/report/pdf/{report_id}")
-
-
 
 # ================== ESEMPIO D'USO ==================
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8003)
+    uvicorn.run(app, host="0.0.0.0", port=8005)
