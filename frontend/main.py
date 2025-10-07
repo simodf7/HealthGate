@@ -136,21 +136,21 @@ def interface():
 
         with col1:
             st.header("Sei un Paziente?")
-            if st.button("Autenticati come Paziente"):
+            if st.button("Autenticati come Paziente", key="patient_login_start", icon="🙋"):
                 print_debug("Utente ha cliccato Autenticati come Paziente")
                 st.session_state.view = "patient-login"
                 st.rerun()
 
         with col2:
             st.header("Sei un Operatore Sanitario?")
-            if st.button("Autenticati come Operatore Sanitario"):
+            if st.button("Autenticati come Operatore Sanitario", key="operator_login_start", icon="🧑‍⚕️"):
                 print_debug("Utente ha cliccato Autenticati come Operatore Sanitario")
                 st.session_state.view = "operator-login"
                 st.rerun()
 
         with col3:
             st.header("Sei un nuovo utente?")
-            if st.button("Registrati"):
+            if st.button("Registrati", key="signup_start", icon="➡️"):
                 print_debug("Utente ha cliccato Registrati")
                 st.session_state.view = "signup"
                 st.rerun()

@@ -35,7 +35,7 @@ def signup_interface():
         st.header("Registrazione utente")
 
     with col2_header:
-        if st.button("Torna alla Home", key="cancel_patient_signup", use_container_width=True):
+        if st.button("Torna alla Home", key="cancel_patient_signup_returnhome", icon="🏠", use_container_width=True):
             st.session_state.view = "home"
             st.rerun()
     

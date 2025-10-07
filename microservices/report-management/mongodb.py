@@ -40,21 +40,25 @@ def get_reports_by_patient(db, patient_id: str):
 
 
 def save_report(patient_id: str, db, report_data: dict):
-    """Salva un nuovo report clinico nel DB."""
-
+    """Salva un nuovo report clinico nel DB e restituisce l'ID del report."""
+    
     # converti date in stringhe
     for k, v in report_data.items():
         if hasattr(v, "isoformat"):  # funziona sia per date che datetime
             report_data[k] = v.isoformat()
 
     report_data["created_at"] = datetime.now().isoformat()
-    db.insert_one(report_data)
-    return True
+    
+    # Inserisci il documento e ottieni il risultato
+    result = db.insert_one(report_data)
+    
+    # Restituisci l'ID del documento inserito come stringa
+    return str(result.inserted_id)
 
 
-def save_report_with_anagrafica(patient_id: int, report_data: dict):
+def save_report_with_anagrafica(patient_id: int, db, report_data: dict):
     """
-    Salva un report clinico su MongoDB includendo l’anagrafica recuperata da PostgreSQL.
+    Salva un report clinico su MongoDB includendo l'anagrafica recuperata da PostgreSQL.
     """
     anagrafica = get_patient_anagrafica(patient_id)
     if anagrafica:
@@ -62,7 +66,7 @@ def save_report_with_anagrafica(patient_id: int, report_data: dict):
         report_data.update(anagrafica)
 
     # chiama la save_report "normale"
-    return save_report(patient_id, report_data)
+    return save_report(patient_id, db, report_data)
 
 
 

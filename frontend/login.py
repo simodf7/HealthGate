@@ -30,7 +30,7 @@ def login_interface():
         st.header("Login utente")
 
     with col2_header:
-        if st.button("Torna alla Home", key="cancel_patient_login", use_container_width=True):
+        if st.button("Torna alla Home", key="cancel_patient_login", icon="🏠", use_container_width=True):
             st.session_state.view = "home"
             st.rerun()
     
@@ -63,6 +63,12 @@ def _perform_login():
     """
     Esegue il login tramite API
     """
+    # Validazione campi
+    if not all([st.session_state.username, st.session_state.login_password]):
+        st.session_state.login_error = ("Tutti i campi sono obbligatori!", "🚨")
+        st.rerun()
+        return
+
     # Request da inviare al Gateway
     if st.session_state.view == "patient-login":
         url = "http://localhost:8001/login/patient"
@@ -105,7 +111,11 @@ def _perform_login():
             
             st.rerun()
         else:
-            error = response.json().get("detail", "Credenziali non valide. Riprova.")
+            # Gestione errore, anche in caso di credenziali non valide
+            try:
+                error = response.json().get("detail", "Errore nel login. Riprova.")
+            except ValueError:
+                error = f"Errore HTTP {response.status_code}: {response.text}"
             st.session_state.login_error = (error, "🚨")
             st.rerun()
     except Exception as e:

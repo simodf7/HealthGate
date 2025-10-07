@@ -1,0 +1,27 @@
+# 🧪 TEST MANUALI PER REPORT MANAGEMENT SERVICE
+# Base URL: http://localhost:8005
+
+# =============================================
+# A. OTTENERE TUTTI I REPORT DI UN PAZIENTE ✅
+# =============================================
+curl -X GET "http://localhost:8005/reports/123" -H "accept: application/json"
+
+# =============================================
+# B. CREARE UN NUOVO REPORT ✅
+# =============================================
+curl -X POST "http://localhost:8005/report" -H "Content-Type: application/json" -H "accept: application/json" -H "x-user-id: test-user" -H "x-user-role: doctor" -d "{\"social_sec_number\": \"CSTRTI01M49F839N\",\"date\": \"2024-01-15\",\"diagnosi\": \"Influenza stagionale\",\"sintomi\": \"Febbre, tosse, mal di gola\",\"trattamento\": \"Riposo e idratazione\"}"
+
+# =============================================
+# C. GENERARE PDF DI UN REPORT 
+# =============================================
+curl -X GET "http://localhost:8005/report/pdf/65a1b2c3d4e5f67890123456" -H "accept: application/json" -H "x-user-id: test-user" -H "x-user-role: doctor"
+
+# =============================================
+# TEST ADDIZIONALI
+# =============================================
+
+# Health Check
+curl -X GET "http://localhost:8005/" -H "accept: application/json"
+
+# Test con codice fiscale diverso
+curl -X POST "http://localhost:8005/report" -H "Content-Type: application/json" -H "accept: application/json" -H "x-user-id: test-user" -H "x-user-role: doctor" -d "{\"social_sec_number\": \"BNCLCU85T10A662S\",\"date\": \"2024-01-16\",\"diagnosi\": \"Controllo routine\",\"sintomi\": \"Nessun sintomo particolare\",\"trattamento\": \"Esami del sangue programmati\"}"

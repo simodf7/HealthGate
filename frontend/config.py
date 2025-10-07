@@ -21,6 +21,38 @@ CSS_STYLE = """
 }
 
 .stButton > button {
+    background: #42a9df;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 0.6rem 1.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.stButton > button:hover {
+    background: #74c3a4;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+</style>
+"""
+
+CSS_STYLE_OLD1 = """
+<style>
+.main-header {
+    text-align: left;
+    color: #3232a8;
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 2rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.stButton > button {
     background: #32a860;
     color: white;
     border: none;
@@ -38,16 +70,10 @@ CSS_STYLE = """
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0,0,0,0.3);
 }
-.home-button > button:hover {
-    background: #4fa070;
-}
-.proceed-button > button:hover {
-    background: #53e4ff;
-}
 </style>
 """
 
-CSS_STYLE_OLD = """
+CSS_STYLE_OLD2 = """
 <style>
 .main-header {
     text-align: left;
