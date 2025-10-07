@@ -1,10 +1,12 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+import httpx
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
 from typing import Dict
 from model import load_all
 import json
 import re
+from config import AGGREGATOR_SERVICE, AGGREGATOR_ROUTE
 
 """
 @asynccontextmanager
@@ -21,8 +23,9 @@ async def lifespan(app: FastAPI):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global embedding_model, llm, vector_store, graph
+    global embedding_model, llm, vector_store, graph, client
     llm, embedding_model, vector_store, graph = await load_all()
+    client = await httpx.AsyncClient()
     print("Modelli caricati correttamente.")
     yield
 
@@ -34,7 +37,7 @@ app = FastAPI(title="LLM Service", lifespan=lifespan)
 
 # Schema input per la richiesta
 class ClinicalRequest(BaseModel):
-    storia: str
+    # storia: str
     sintomi: str
 
 
@@ -52,13 +55,19 @@ def health_token():
 
 
 @app.post("/llm/diagnose", response_model=Dict)
-async def diagnose(req: ClinicalRequest):
+async def diagnose(req: ClinicalRequest, request: Request):
     """
     Endpoint che riceve un testo clinico e restituisce JSON strutturato
     dopo correzione, estrazione e validazione.
     """
     try:
-        response = graph.invoke({"sintomi": req.sintomi, "storia_paziente": req.storia})
+
+        user_id = request.headers.get("X-User-Id")
+        resp = await client.get(f"{AGGREGATOR_SERVICE}{AGGREGATOR_ROUTE}/{user_id}")
+        resp.raise_for_status()
+        
+
+        response = graph.invoke({"sintomi": req.sintomi, "age": resp['age'], "sex": resp['sex'], "reports": resp['reports']})
          
         # Verifica che 'answer' sia presente e non None
         raw_answer = response.get("answer")

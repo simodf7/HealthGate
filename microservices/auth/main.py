@@ -93,27 +93,11 @@ async def login(data: OperatorLoginRequest, db: AsyncSession = Depends(get_db)):
         "phone_number": operator.phone_number
     }
 
+@app.get("/patient/{patient_id}", response_model=dict)
+async def get_context_data(patient_id: int, db: AsyncSession = Depends(get_db)):
+    patient = await find_patient_by_id(patient_id, db)
+    return {
+        "birth_date" :  patient.birth_date, 
+        "sex": patient.sex
+    }
 
-
-'''
-@app.post("/login")
-def login(username: str, password: str):
-    # validazione utente (qui finto)
-    user_id = "user-123"
-    access_token = create_access_token(user_id, scopes=["read:items"])
-    return {"access_token": access_token, "token_type": "bearer"}
-
-@app.get("/protected")
-def protected_route(token: str):
-    payload = verify_token(token)
-    return {"msg": f"Benvenuto utente {payload['sub']}"}
-
-# --- route ---
-@app.get("/profilo")
-def get_profilo(token_payload = Depends(require_paziente)):
-    return {"msg": f"Accesso consentito a {token_payload['sub']} come paziente"}
-
-@app.get("/cartella_clinica")
-def get_cartella(token_payload = Depends(require_operatore)):
-    return {"msg": f"Accesso consentito a {token_payload['sub']} come operatore sanitario"}
-'''

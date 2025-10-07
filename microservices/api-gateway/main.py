@@ -5,7 +5,6 @@
 
 
 from fastapi import FastAPI, Request, HTTPException, Response
-from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 import httpx  
 import jwt 
@@ -30,25 +29,6 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="API Gateway", lifespan=lifespan)
 
 
-
-
-
-"""
-# autenticazione jwt
-async def verify_jwt(request: Request):
-    auth_header = request.headers.get("Authorization")
-    if not auth_header or not auth_header.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Token mancante")
-
-    token = auth_header.split(" ")[1]
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[JWT_ALGORITHM])
-        request.state.user = payload  # salviamo l’utente per usi successivi
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Token scaduto")
-    except jwt.InvalidTokenError:
-        raise HTTPException(status_code=401, detail="Token invalido")
-"""
 
 # --- verifica token e controllo ruolo generico ---
 async def verify_jwt_with_role(request: Request, required_role: str):
@@ -168,7 +148,6 @@ async def signup_proxy(request: Request):
 
 
 """  Uniti in un'unica rotta
-
 ## Ingestion service route
 @app.post("/ingestion")
 async def ingestion_proxy(request: Request):

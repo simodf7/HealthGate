@@ -94,6 +94,20 @@ async def find_patient_by_social_number(data: PatientLoginRequest, db: AsyncSess
     return patient
     
 
+async def find_patient_by_id(id: int, db: AsyncSession):
+    result = await db.execute(
+        select(Patient).where(Patient.id == id)
+    )
+
+    patient = result.scalar_one_or_none()  
+    if patient is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Paziente non trovato"
+        )
+
+    return patient
+
 async def find_operator_by_med_code(data: OperatorLoginRequest, db: AsyncSession):
     result = await db.execute(
         select(Operator).where(Operator.med_register_code == data.med_register_code)

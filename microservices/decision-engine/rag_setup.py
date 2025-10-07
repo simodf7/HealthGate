@@ -1,20 +1,42 @@
 from langchain.prompts import PromptTemplate
 from langchain_core.documents import Document
 from langgraph.graph import START, StateGraph
-from typing_extensions import List, TypedDict
+from typing_extensions import List, TypedDict, Dict
 
 
 # Define state for application
 class State(TypedDict):
     sintomi: str
-    storia_paziente: str
+    age: int
+    sex: str
+    report: List[Dict]
     context: List[Document]
     answer: str
 
 
 # Define application steps
 def retrieve(state: State, vector_store):
-    retrieved_docs = vector_store.similarity_search(state["sintomi"] + state['storia_paziente'], k=6)
+    query_parts = [f"Sintomi attuali: {state['sintomi']}"]
+
+    # Se ci sono report precedenti, aggiungili
+    if state.get("reports"):
+        reports_text = []
+        for report in state["reports"]:
+            r_text = (
+                f"Report precedente - Sintomi: {report.get('sintomi', '')}. "
+                f"Diagnosi: {report.get('diagnosi', '')}. "
+                f"Trattamento: {report.get('trattamento', '')}. "
+                f"Motivazione della visita: {report.get('motivazione', '')}."
+            )
+            reports_text.append(r_text)
+
+        query_parts.append(" ".join(reports_text))
+
+    # Crea la query finale per la similarity search
+    query = "\n".join(query_parts)
+
+    
+    retrieved_docs = vector_store.similarity_search(query, k=6)
     print("\n\n--- RETRIEVED DOCS ---\n\n")
     for doc in retrieved_docs:
         print("Content: " +  doc.page_content + "\n")
@@ -40,7 +62,7 @@ def generate(state: State, llm):
     print("\n\n-----\n\n")
 
 
-    messages = prompt.invoke({"sintomi": state["sintomi"], "storia_paziente": state["storia_paziente"], "context": docs_content})
+    messages = prompt.invoke({"sintomi": state["sintomi"], "age": state["age"], "sex": state['sex'], "report": state['report'], "context": docs_content})
     response = llm.invoke(messages, temperature=0)
     return {"answer": response.content}
 
@@ -62,11 +84,11 @@ prompt_template = """
     
     L'input che ricevi è strutturato come segue:
 
-    Sintomi del paziente: {sintomi}
-
-    Storia clinica del paziente: {storia_paziente}
-    
-    Estatti da linee guida ufficiali relativi ai sintomi: {context}
+    - Sintomi attuali del paziente: {sintomi}
+    - Età del paziente: {age}
+    - Sesso del paziente: {sex}
+    - Precedenti Report clinici del paziente: {report}
+    - Estratti da linee guida ufficiali relativi ai sintomi: {context}
 
     Rispondi seguendo ESATTAMENTE con la struttura seguente in formato JSON.
     
@@ -81,7 +103,7 @@ prompt_template = """
 
 prompt = PromptTemplate(
     template=prompt_template,
-    input_variables=["sintomi", "storia_paziente", "context"]
+    input_variables=["sintomi", "age", "sex", "report", "context"]
 )
 
 def graph_building(vector_store, llm):
