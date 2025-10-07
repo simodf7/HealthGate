@@ -4,6 +4,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+## secondo me sostituire con richiamare la route di auth service, ora te la modifico
+
+
 PG_HOST = os.getenv("PG_HOST", "localhost")
 PG_USER = os.getenv("PG_USER")
 PG_PASSWORD = os.getenv("PG_PASSWORD")

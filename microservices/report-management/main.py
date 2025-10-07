@@ -2,9 +2,10 @@
 
 from fastapi import FastAPI, HTTPException, status, Header
 from pydantic import BaseModel
-from typing import Optional
+from typing import Dict, List, Optional
+from mongodb import connect_db, get_db
 from contextlib import asynccontextmanager
-from mongodb import reports
+from mongodb import reports, cerca_paziente_per_codice_fiscale
 from pdf_generator import genera_scheda_pdf_da_json
 
 
@@ -29,24 +30,15 @@ class GeneratePDFResponse(BaseModel):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Qui potresti inizializzare connessioni se necessario
-    print("🚀 Report Management Service avviato")
+    global db
+    client = await connect_db()
+    db = await get_db(client)
     yield  # to be executed at shutdown
     print("🛑 Report Management Service terminato")
 
 
 app = FastAPI(title="Report Management Service", lifespan=lifespan)
 
-
-# ================== FUNZIONI HELPER ==================
-
-def cerca_paziente_per_codice_fiscale(cf: str):
-    """
-    Cerca il paziente più recente in MongoDB tramite codice fiscale.
-    """
-    return reports.find_one(
-        {"social_sec_number": cf},
-        sort=[("created_at", -1)]
-    )
 
 
 # ================== ROUTES ==================
@@ -56,6 +48,28 @@ async def health():
     return {"Status": "T'appost! Report Management Service running"}
 
 
+# route per ottenere tutti i report di un paziente
+@app.get("/reports/{patient_id}", response_model = List[Dict])
+async def get_reports(patient_id: int):
+    
+    ## SE PUOI IMPLEMENTA UNA FUNZ SIMILE A CERCA PER CODICE FISCALE, MA CON L'ID 
+
+    ## GET_REPORTS_BY_PATIENT 
+
+    return reports 
+
+
+# route per ottenere tutti i report di un paziente con il codice fiscale (RICHIAMATO DALL'OPERATORE)
+@app.get("/reports/{social_sec_number}", response_model = List[Dict])
+async def get_reports():
+    
+    ## GET_REPORTS_BY_PATIENT 
+
+    return reports 
+
+
+
+# route per generare un nuovo report 
 @app.post("/report", response_model=GeneratePDFResponse)
 async def generate_report(
     data: GeneratePDFRequest,
@@ -98,6 +112,14 @@ async def generate_report(
         
         print(f"✅ Paziente trovato: {paziente.get('firstname', '')} {paziente.get('lastname', '')}")
         
+
+        ## CARICA IN MONGODB IL REPORT; QUI NON TI DEVI PREOCCUPARE DEI DATI ANAGRAFICI.
+        ## DEVI SOLO CARICARE SINTOMI ETC.
+
+        ## SOLO NELL'ALTRA ROUTE DI GENERAZIONE PDF, DEVI CHIAMARE LA FUNZ SUCCESSIVA
+
+
+
         # Genera il PDF
         risultato = genera_scheda_pdf_da_json(
             dati_json=paziente, 
@@ -125,6 +147,10 @@ async def generate_report(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Errore interno: {str(e)}"
         )
+
+# route per ottenere il pdf di un report
+@app.get("/report/pdf/{report_id}")
+
 
 
 # ================== ESEMPIO D'USO ==================
