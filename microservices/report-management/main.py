@@ -1,90 +1,86 @@
-# endpoint: id paziente, così fa query su mongodb e stampa i dati del paziente, + stato
-# ingestion chiama report management che fa query mongodb
-# i dati ottenuti dal report vengono uniti con l'info del sesso e dell'età e viene creata la storia
+# Aggiungi questi import all'inizio del file main.py
+from fastapi import FastAPI, HTTPException, Header
+from pydantic import BaseModel
+from typing import Optional
+import uvicorn
 
-# decisione finale: decision passa tutto a report, tanto comunque decision si prende i sintomi
+# Crea l'app FastAPI
+app = FastAPI(title="Report")
 
-# Exec:
-# cd microservices/report-management
-# set PYTHONUTF8=1
-# python main.py
+# Schema per la richiesta
+class GeneratePDFRequest(BaseModel):
+    social_sec_number: str
+    firstname: Optional[str] = None
+    lastname: Optional[str] = None
+    birth_date: Optional[str] = None
+    sex: Optional[str] = None
 
-'''
-[REPORT] main.py
+# Schema per la risposta
+class GeneratePDFResponse(BaseModel):
+    success: bool
+    pdf_path: Optional[str] = None
+    error: Optional[str] = None
 
-Cerca un paziente in MongoDB tramite codice fiscale e genera
-un PDF formattato usando direttamente le funzioni di pdf_generator.py.
-I dati anagrafici vengono presi da st.session_state.
-'''
+# Health check
+@app.get("/")
+def health_check():
+    return {"status": "Report running"}
 
-import streamlit as st
-from mongodb import reports
-from pdf_generator import genera_scheda_pdf_da_json
-from datetime import datetime
-
-
-def cerca_paziente_per_codice_fiscale(cf: str):
+# Route per generare il PDF
+@app.post("/generate-pdf", response_model=GeneratePDFResponse)
+async def generate_pdf_endpoint(
+    request: GeneratePDFRequest,
+    x_user_id: Optional[str] = Header(None),
+    x_user_role: Optional[str] = Header(None)
+):
     """
-    Cerca il paziente più recente in MongoDB tramite codice fiscale.
+    Genera un PDF del report paziente dato il codice fiscale.
+    I dati anagrafici possono essere forniti nella richiesta o recuperati da MongoDB.
     """
-    return reports.find_one(
-        {"social_sec_number": cf},
-        sort=[("created_at", -1)]
-    )
-
-
-def genera_pdf_paziente(cf: str):
-    """
-    Recupera i dati del paziente e genera il PDF formattato
-    utilizzando direttamente pdf_generator.genera_scheda_pdf_da_json.
-    I dati anagrafici (firstname, lastname, birth_date, sex) vengono
-    presi da st.session_state invece che da MongoDB.
-    """
-    print(f"🔍 Ricerca paziente con codice fiscale: {cf}")
-    paziente = cerca_paziente_per_codice_fiscale(cf)
-
-    if not paziente:
-        print(f"❌ Nessun paziente trovato con codice fiscale {cf}")
-        return None
-
-    # Sovrascrivi i dati anagrafici con quelli di session_state
-    paziente['firstname'] = st.session_state.firstname
-    paziente['lastname'] = st.session_state.lastname
-    paziente['birth_date'] = st.session_state.birth_date
-    paziente['sex'] = st.session_state.sex
-
-    print(f"✅ Paziente trovato: {paziente.get('firstname', '')} {paziente.get('lastname', '')}")
-
-    # Genera PDF usando il sistema interno di pdf_generator.py
     try:
+        # Cerca il paziente in MongoDB
+        paziente = cerca_paziente_per_codice_fiscale(request.social_sec_number)
+        
+        if not paziente:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"Nessun paziente trovato con codice fiscale {request.social_sec_number}"
+            )
+        
+        # Sovrascrivi i dati anagrafici se forniti nella richiesta
+        if request.firstname:
+            paziente['firstname'] = request.firstname
+        if request.lastname:
+            paziente['lastname'] = request.lastname
+        if request.birth_date:
+            paziente['birth_date'] = request.birth_date
+        if request.sex:
+            paziente['sex'] = request.sex
+        
+        print(f"✅ Paziente trovato: {paziente.get('firstname', '')} {paziente.get('lastname', '')}")
+        
+        # Genera il PDF
         risultato = genera_scheda_pdf_da_json(dati_json=paziente, mantieni_html=False)
-
+        
         if risultato["success"]:
             print(f"🎉 PDF generato con successo: {risultato['pdf']}")
-            return risultato["pdf"]
+            return GeneratePDFResponse(
+                success=True,
+                pdf_path=risultato["pdf"]
+            )
         else:
-            print(f"❌ Errore nella generazione PDF: {risultato['error']}")
-            return None
-
+            return GeneratePDFResponse(
+                success=False,
+                error=risultato["error"]
+            )
+            
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"❌ Errore critico durante la generazione PDF: {e}")
-        return None
+        print(f"❌ Errore durante la generazione del PDF: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Errore interno: {str(e)}")
 
 
-# ================== ESEMPIO D'USO ==================
+# Avvia il server se eseguito direttamente
 if __name__ == "__main__":
-    # Prende il codice fiscale direttamente dal session_state di Streamlit
-    # codice_fiscale = st.session_state.social_sec_number.strip().upper()
-    
-    # Per il test, simula i dati di session_state
-    if 'firstname' not in st.session_state:
-        st.session_state.firstname = "Ale"
-        st.session_state.lastname = "Campanella"
-        st.session_state.birth_date = "2001-08-09"
-        st.session_state.sex = "F"
-    
-    codice_fiscale = "CMPLAE01M49F839Z"
-    if not codice_fiscale:
-        print("❌ Codice fiscale non presente in st.session_state.social_sec_number")
-    else:
-        genera_pdf_paziente(codice_fiscale)
+    uvicorn.run(app, host="0.0.0.0", port=8003)

@@ -171,3 +171,8 @@ async def signup_proxy(request: Request):
 @app.post("/diagnose")  # ingest richiamerà decision
 async def diagnose_proxy(request: Request):
     return await proxy_request(request, "post", MICROSERVICES["ingest"], "patient")
+
+## Report Management service route
+@app.post("/report")
+async def generate_pdf_proxy(request: Request):
+    return await proxy_request(request, "post", MICROSERVICES["report"], "operator")

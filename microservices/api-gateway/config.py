@@ -13,5 +13,4 @@ MICROSERVICES = {
     "ingest": os.getenv("MICROSERVICE_INGEST"),
     "decision": os.getenv("MICROSERVICE_DECISION"),
     "report": os.getenv("MICROSERVICE_REPORT"),
-    "notify": os.getenv("MICROSERVICE_NOTIFY"),
 }
