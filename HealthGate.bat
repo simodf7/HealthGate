@@ -13,6 +13,7 @@ start "" wt ^
     new-tab --title "Auth" -d ".\microservices\auth" cmd /k "python -m uvicorn main:app --reload --host 0.0.0.0 --port 8001" ^; ^
     new-tab --title "Ingest" -d ".\microservices\ingestion" cmd /k "python -m uvicorn main:app --reload --host 0.0.0.0 --port 8002" ^; ^
     new-tab --title "Decision" -d ".\microservices\decision-engine" cmd /k "python -m uvicorn main:app --reload --host 0.0.0.0 --port 8003" ^; ^
+    new-tab --title "Report" -d ".\microservices\report-management" cmd /k "python -m uvicorn main:app --reload --host 0.0.0.0 --port 8005" ^; ^
     new-tab --title "Chroma" -d ".\microservices\decision-engine" cmd /k "python -m chroma run --host localhost --port 8010" ^; ^
     new-tab --title "HealthGate" -d "." cmd /k "python -m streamlit run HealthGate.py"
 
