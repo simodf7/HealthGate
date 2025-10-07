@@ -55,8 +55,10 @@ def signup_interface():
                     st.session_state.signup_password,
                     st.session_state.signup_confirm_password]):
                     st.session_state.signup_error_paziente = ("Tutti i campi sono obbligatori!", "🚨")
+                    st.rerun()
                 elif st.session_state.signup_password != st.session_state.signup_confirm_password:
                     st.session_state.signup_error_paziente = ("Le password non coincidono!", "🚨")
+                    st.rerun()
                 else:
                     # Payload da inviare al backend
                     payload = {
@@ -84,8 +86,10 @@ def signup_interface():
                             except ValueError:
                                 error = f"Errore HTTP {response.status_code}: {response.text}"
                             st.session_state.signup_error_paziente = (error, "🚨")
+                            st.rerun()
                     except Exception as e:
                         st.session_state.signup_error_paziente = (f"Errore di connessione: {e}", "🚨")
+                        st.rerun()
 
         elif user_type == "Operatore":  # Operatore
             st.session_state.med_register_code = st.text_input("Codice Albo Medico", key="signup_operator_med_register_code")
@@ -110,8 +114,10 @@ def signup_interface():
                     st.session_state.signup_password,
                     st.session_state.signup_confirm_password]):
                     st.session_state.signup_error_operatore = ("Tutti i campi sono obbligatori.", "🚨")
+                    st.rerun()
                 elif st.session_state.signup_password != st.session_state.signup_confirm_password:
                     st.session_state.signup_error_operatore = ("Le password non coincidono.", "🚨")
+                    st.rerun()
                 else:
                     payload = {
                         "med_register_code": st.session_state.med_register_code,
@@ -137,7 +143,15 @@ def signup_interface():
                             except ValueError:
                                 error = f"Errore HTTP {response.status_code}: {response.text}"
                             st.session_state.signup_error_operatore = (error, "🚨")
+                            st.rerun()
                     except Exception as e:
                         st.session_state.signup_error_operatore = (f"Errore di connessione: {e}", "🚨")
+                        st.rerun()
 
-    signup_dialog()
+    # Mostra il dialog solo se non c'è stata una registrazione con successo
+    if not st.session_state.get("patient_signup_success", False) and not st.session_state.get("operator_signup_success", False):
+        signup_dialog()
+    else:
+        # Reset dei flag dopo il rerun
+        st.session_state.patient_signup_success = False
+        st.session_state.operator_signup_success = False

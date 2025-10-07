@@ -170,16 +170,16 @@ def genera_scheda_da_json(dati_json, output_html=None, template_path=template_pa
     
     # Genera nome file se non specificato
     if not output_html:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
         lastname = dati_json.get('lastname', '')
         firstname = dati_json.get('firstname', '')
         
         if lastname and firstname:
-            nome_paziente = f"{lastname}_{firstname}".replace(' ', '_').lower()
+            nome_paziente = f"{firstname}{lastname}".replace(' ', '_')
             nome_paziente = ''.join(c for c in nome_paziente if c.isalnum() or c == '_')
-            output_html = f"scheda_{nome_paziente}.html"
+            output_html = f"{timestamp}_{nome_paziente}-Report.html"
         else:
-            output_html = f"scheda_paziente_{timestamp}.html"
+            output_html = f"{timestamp}-Paziente-Report.html"
         
         print(f"📝 Nome file auto-generato: {output_html}")
     
@@ -245,7 +245,7 @@ def stampa_html_in_pdf(html_path, output_pdf):
             
             browser.close()
             
-        print(f"✅ PDF generato con successo: {output_pdf}")
+        # print(f"✅ PDF generato con successo: {output_pdf}")
         
     except Exception as e:
         print(f"❌ Errore durante la conversione HTML->PDF: {e}")
@@ -255,34 +255,40 @@ def stampa_html_in_pdf(html_path, output_pdf):
 def genera_scheda_pdf_da_json(dati_json, output_pdf=None, template_path=template_path, mantieni_html=False):
     """
     Funzione completa che genera una scheda paziente PDF partendo da dati JSON.
-    
-    Workflow: JSON → HTML → PDF (con cleanup automatico)
-
-    Args:
-        dati_json (dict): Dizionario completo con i dati del paziente
-        output_pdf (str, optional): Percorso completo del file PDF
-        template_path (str): Percorso del template HTML
-        mantieni_html (bool): Se True, mantiene il file HTML temporaneo
-
-    Returns:
-        dict: {"pdf": path, "html": path, "success": bool, "error": msg}
+    Correzioni:
+     - assicura che output_pdf abbia estensione .pdf
+     - se output_pdf è una directory la usa come cartella di destinazione
     """
-    
-    # Genera nome file PDF
+    # Prepara nome paziente per i fallback
+    lastname = dati_json.get('lastname', '')
+    firstname = dati_json.get('firstname', '')
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+
+    # Costruzione del nome PDF di default (corretto con .pdf)
+    if lastname and firstname:
+        nome_paziente = f"{lastname}_{firstname}".replace(' ', '_')
+        nome_paziente = ''.join(c for c in nome_paziente if c.isalnum() or c == '_')
+        default_pdf_name = f"{timestamp}_{nome_paziente}-Report.pdf"
+    else:
+        default_pdf_name = f"{timestamp}_{nome_paziente}-Report.pdf"
+
+    # Se non è stato passato output_pdf -> usa default dentro cartella "pdf"
     if not output_pdf:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        lastname = dati_json.get('lastname', '')
-        firstname = dati_json.get('firstname', '')
-        
-        if lastname and firstname:
-            nome_paziente = f"{lastname}_{firstname}".replace(' ', '_').lower()
-            nome_paziente = ''.join(c for c in nome_paziente if c.isalnum() or c == '_')
-            output_pdf = os.path.join("pdf", f"scheda_{nome_paziente}_{timestamp}.pdf")
+        output_pdf = os.path.join("pdf", default_pdf_name)
+    else:
+        # Se l'utente ha passato una directory, mette il file lì dentro
+        if os.path.isdir(output_pdf):
+            output_pdf = os.path.join(output_pdf, default_pdf_name)
         else:
-            output_pdf = os.path.join("pdf", f"scheda_paziente_{timestamp}.pdf")
-        
-        print(f"📄 Nome file PDF auto-generato: {output_pdf}")
-    
+            root, ext = os.path.splitext(output_pdf)
+            # se non c'è estensione, aggiungi .pdf
+            if ext == "":
+                output_pdf = output_pdf + ".pdf"
+            # se estensione diversa da .pdf, sostituiscila con .pdf
+            elif ext.lower() != ".pdf":
+                output_pdf = root + ".pdf"
+            # altrimenti: ha già .pdf -> lascia così
+
     # Assicura che le cartelle esistano
     os.makedirs(os.path.dirname(output_pdf), exist_ok=True)
     os.makedirs("html", exist_ok=True)
@@ -290,15 +296,14 @@ def genera_scheda_pdf_da_json(dati_json, output_pdf=None, template_path=template
     # Genera HTML temporaneo (sempre nella cartella "html")
     pdf_name = os.path.splitext(os.path.basename(output_pdf))[0]
     html_temporaneo = os.path.join("html", f"{pdf_name}_temp.html")
-    
-    print(f"📄 Generazione HTML temporaneo: {html_temporaneo}")
-    
+
+    # Genera HTML (usa la funzione esistente)
     risultato_html = genera_scheda_da_json(
-        dati_json, 
-        output_html=html_temporaneo, 
+        dati_json,
+        output_html=html_temporaneo,
         template_path=template_path
     )
-    
+
     if not risultato_html["success"]:
         return {
             "pdf": None,
@@ -308,55 +313,41 @@ def genera_scheda_pdf_da_json(dati_json, output_pdf=None, template_path=template
         }
 
     html_path = risultato_html["html"]
-    print(f"✅ HTML generato con successo: {html_path}")
-    
-    # Converti HTML → PDF
+
+    # Converti HTML -> PDF
     try:
-        print(f"📄 Conversione HTML → PDF: {output_pdf}")
         stampa_html_in_pdf(html_path, output_pdf)
-        print(f"✅ PDF generato con successo: {output_pdf}")
-        
     except Exception as e:
-        error_details = traceback.format_exc()
-        print("❌ ERRORE CRITICO DURANTE LA CONVERSIONE PDF")
-        print(error_details)
-        
+        # pulizia in caso di errore
         if not mantieni_html and os.path.exists(html_path):
             try:
                 os.remove(html_path)
-                print(f"🧹 File HTML temporaneo rimosso dopo errore")
             except:
                 pass
-        
         return {
             "pdf": None,
             "html": html_path if mantieni_html else None,
             "success": False,
             "error": f"Errore nella conversione PDF: {str(e)}"
         }
-    
+
     # Cleanup opzionale
     risultato_finale = {
         "pdf": os.path.abspath(output_pdf),
         "success": True
     }
-    
+
     if mantieni_html:
         risultato_finale["html"] = os.path.abspath(html_path)
-        print(f"📄 File HTML mantenuto: {html_path}")
     else:
         try:
             os.remove(html_path)
-            print(f"🧹 File HTML temporaneo rimosso: {html_path}")
             risultato_finale["html"] = None
         except Exception as e:
-            print(f"⚠️ Impossibile rimuovere file HTML temporaneo: {e}")
             risultato_finale["html"] = os.path.abspath(html_path)
-    
-    print(f"🎉 PROCESSO COMPLETATO CON SUCCESSO!")
-    print(f"📄 PDF finale: {risultato_finale['pdf']}")
-    
+
     return risultato_finale
+
 
 
 def crea_report_medico(dati_report, filename, template_path=template_path):
