@@ -7,7 +7,7 @@ Modulo per il signup.
 import streamlit as st
 import requests
 import datetime
-from config import CSS_STYLE
+from config import CSS_STYLE, PAGE_ICON
 
 today = datetime.date.today()
 maxDate = today.replace(year=today.year - 18)  # Utente deve avere almeno 18 anni
@@ -22,7 +22,7 @@ def signup_interface():
     st.set_page_config(
         page_title="HealthGate", 
         layout="centered",
-        page_icon="🚑",
+        page_icon=PAGE_ICON,
         initial_sidebar_state="collapsed"
     )
 

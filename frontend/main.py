@@ -10,7 +10,7 @@ import streamlit as st
 from datetime import datetime
 import login
 import signup
-from config import CSS_STYLE, NAVBAR_PAGES, NAVBAR_STYLES
+from config import CSS_STYLE, PAGE_ICON
 from streamlit_navigation_bar import st_navbar
 
 # Percorsi ai moduli
@@ -89,7 +89,7 @@ def interface():
     st.set_page_config(
         page_title="HealthGate", 
         layout="wide",
-        page_icon="🚑",
+        page_icon=PAGE_ICON,
         initial_sidebar_state="collapsed"
     )
 

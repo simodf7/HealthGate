@@ -8,7 +8,7 @@ import streamlit as st
 import requests
 import patient
 import operator
-from config import CSS_STYLE
+from config import CSS_STYLE, PAGE_ICON
 
 def login_interface():
     """
@@ -17,7 +17,7 @@ def login_interface():
     st.set_page_config(
         page_title="Login", 
         layout="centered",
-        page_icon="🚑",
+        page_icon=PAGE_ICON,
         initial_sidebar_state="collapsed"
     )
 
@@ -30,7 +30,7 @@ def login_interface():
         st.header("Login utente")
 
     with col2_header:
-        if st.button("Torna alla Home", key="cancel_patient_signup", use_container_width=True):
+        if st.button("Torna alla Home", key="cancel_patient_login", use_container_width=True):
             st.session_state.view = "home"
             st.rerun()
     
