@@ -2,10 +2,10 @@
 
 chcp 65001 > nul
 
-echo ========================================
-echo   Avvio HealthGate System (Schede)
-echo ========================================
-echo.
+@REM echo ========================================
+@REM echo   Avvio HealthGate System (Schede)
+@REM echo ========================================
+@REM echo.
 
 :: Avvia tutti i servizi in Windows Terminal con schede separate
 start "" wt ^
@@ -17,19 +17,19 @@ start "" wt ^
     new-tab --title "Chroma" -d ".\microservices\decision-engine" cmd /k "python -m chroma run --host localhost --port 8010" ^; ^
     new-tab --title "HealthGate" -d "." cmd /k "python -m streamlit run HealthGate.py"
 
-echo.
-echo ========================================
-echo   Tutti i servizi avviati in Windows Terminal!
-echo ========================================
-echo.
-echo Servizi attivi:
-echo   - Gateway:  http://localhost:8000
-echo   - Auth:     http://localhost:8001
-echo   - Ingest:   http://localhost:8002
-echo   - Decision: http://localhost:8003
-echo   - Chroma:   http://localhost:8010
-echo   - Frontend: http://localhost:8501
-echo.
-echo Usa Ctrl+Tab per navigare tra le schede
-echo Premi un tasto per chiudere questa finestra...
-pause > nul
+@REM echo.
+@REM echo ========================================
+@REM echo   Tutti i servizi avviati in Windows Terminal!
+@REM echo ========================================
+@REM echo.
+@REM echo Servizi attivi:
+@REM echo   - Gateway:  http://localhost:8000
+@REM echo   - Auth:     http://localhost:8001
+@REM echo   - Ingest:   http://localhost:8002
+@REM echo   - Decision: http://localhost:8003
+@REM echo   - Chroma:   http://localhost:8010
+@REM echo   - Frontend: http://localhost:8501
+@REM echo.
+@REM echo Usa Ctrl+Tab per navigare tra le schede
+@REM echo Premi un tasto per chiudere questa finestra...
+@REM pause > nul
