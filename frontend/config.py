@@ -20,8 +20,20 @@ CSS_STYLE = """
     text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
 }
 
-.stButton > button {
+.stButton > button {  /* Qui aggiungiamo lo stile anche al download button */
     background: #42a9df;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 0.6rem 1.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.stDownloadButton > button {
+    background: #2ec400;
     color: white;
     border: none;
     border-radius: 10px;
@@ -34,6 +46,13 @@ CSS_STYLE = """
 
 .stButton > button:hover {
     background: #05a0e3;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 15px rgba(0,0,0,0.3);
+}
+
+.stDownloadButton > button:hover {
+    background: #008f0c;
     color: #ffffff;
     transform: translateY(-2px);
     box-shadow: 0 2px 15px rgba(0,0,0,0.3);

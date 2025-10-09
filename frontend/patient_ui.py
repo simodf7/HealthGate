@@ -25,8 +25,9 @@ def interface():
 
     st.markdown(CSS_STYLE, unsafe_allow_html=True)
 
+    # Gestione toast per successo registrazione/login
     if st.session_state.patient_login_success:
-        st.toast(f"Rieccoti, {st.session_state.firstname} {st.session_state.lastname}!", icon="✅", duration="short")
+        st.toast(f"Rieccoti, {st.session_state.firstname} {st.session_state.lastname}!", icon="✅")
         st.session_state.patient_login_success = False  # Resetto il FLAG
 
     # === BARRA SUPERIORE ===

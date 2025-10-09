@@ -66,6 +66,12 @@ def initialize_session_state():
     if "signup_confirm_password" not in st.session_state:
         st.session_state.signup_confirm_password = ""
 
+    # Sezione Report
+    if "pdf_to_download" not in st.session_state:
+        st.session_state.pdf_to_download = None
+    if 'current_page' not in st.session_state:
+        st.session_state.current_page = 1
+
     # Generic
     if "view" not in st.session_state:
         st.session_state.view = "home"
@@ -119,18 +125,9 @@ def interface():
     st.divider()
     
     # Gestione toast per successo registrazione/login
-    if st.session_state.patient_signup_success:
-        st.toast(f"Registrazione Paziente avvenuta con successo: {st.session_state.firstname} {st.session_state.lastname}", icon="✅")
-        st.session_state.patient_signup_success = False  # Resetto il FLAG
-    elif st.session_state.operator_signup_success:
-        st.toast(f"Registrazione Operatore avvenuta con successo: {st.session_state.firstname} {st.session_state.lastname}", icon="✅")
-        st.session_state.operator_signup_success = False  # Resetto il FLAG
-    elif st.session_state.patient_login_success:
-        st.toast(f"Rieccoti, {st.session_state.firstname} {st.session_state.lastname}!", icon="✅")
-        st.session_state.patient_login_success = False  # Resetto il FLAG
-    elif st.session_state.operator_login_success:
-        st.toast(f"Rieccoti, {st.session_state.firstname} {st.session_state.lastname}!", icon="✅")
-        st.session_state.operator_login_success = False  # Resetto il FLAG
+    '''
+    
+    '''
 
     # Mostra interfaccia home solo se non siamo in login/signup
     if st.session_state.view == "home":

@@ -74,8 +74,7 @@ def get_record_by_id(record_id):
 
 def render_pagination_control(total_pages):
     """Crea e gestisce un controllo di paginazione personalizzato."""
-    if 'current_page' not in st.session_state:
-        st.session_state.current_page = 1
+    
     
     st.session_state.current_page = min(st.session_state.current_page, total_pages)
     st.session_state.current_page = max(1, st.session_state.current_page)
@@ -203,6 +202,24 @@ def render_data_filter_section(df):
                         
                         # Bottone PDF
                         if st.button("📄 Genera PDF", key=f"pdf_{report_id}", use_container_width=True):
+                            col1, col2 = st.columns([9,1], gap="medium")
+
+                            with col1:
+                                # st.pdf("microservices/report-management/pdf/20251006_133030_Campanella_Ale-Report.pdf", height="stretch")
+                                pdf_path = "microservices/report-management/pdf/20251006_133030_Campanella_Ale-Report.pdf" # placeholder
+                                pdf_filename = "20251006_133030_Campanella_Ale-Report.pdf" # placeholder
+                                st.pdf(pdf_path, height=350)
+                            
+                            with col2:
+                                with open(pdf_path, "rb") as pdf_file:
+                                    st.download_button(
+                                        label="📩 Scarica PDF",
+                                        data=pdf_file.read(),
+                                        file_name=pdf_filename,
+                                        mime="application/pdf",
+                                        key=f"download_{report_id}"
+                                    )
+                            '''
                             with st.spinner("Generazione PDF..."):
                                 full_record = get_record_by_id(str(report_id))
                                 if full_record:
@@ -222,6 +239,7 @@ def render_data_filter_section(df):
                                         )
                                 else:
                                     st.error("Dati completi non trovati.")
+                                '''
     else:
         st.info("Nessun paziente corrisponde ai criteri di ricerca.")
 
@@ -236,10 +254,10 @@ def interface():
 
     st.markdown(CSS_STYLE, unsafe_allow_html=True)
 
-    """Funzione principale dell'interfaccia operatore."""
-    if st.session_state.get('patient_login_success'):
+    # Gestione toast per successo registrazione/login
+    if st.session_state.patient_login_success:
         st.toast(f"Rieccoti, {st.session_state.firstname} {st.session_state.lastname}!", icon="✅")
-        st.session_state.patient_login_success = False
+        st.session_state.patient_login_success = False  # Resetto il FLAG
 
     col1, col2 = st.columns([3, 1])
     with col1:
@@ -259,8 +277,5 @@ def interface():
     if df.empty:
         st.warning("⚠️ Nessun dato trovato. Usa i placeholder per testare l'interfaccia.")
         return
-
-    if "pdf_to_download" not in st.session_state:
-        st.session_state.pdf_to_download = None
 
     render_data_filter_section(df)

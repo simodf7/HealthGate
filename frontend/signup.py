@@ -30,7 +30,7 @@ def load_comuni():
 
 COMUNI_ITALIANI = load_comuni()
 
-def signup_interface():
+def interface():
     """
     Funzione che gestisce l'interfaccia di signup.
     Permette agli utenti di registrarsi tramite API Gateway.
@@ -46,6 +46,8 @@ def signup_interface():
 
     # CSS personalizzato per migliorare l'aspetto grafico
     st.markdown(CSS_STYLE, unsafe_allow_html=True)
+
+    # Gestione toast per successo registrazione/login
 
     col1_header, col2_header = st.columns([3, 2])
 
@@ -126,11 +128,59 @@ def signup_interface():
         if st.button("Registrati come Operatore", key="signup_operator_button", use_container_width=True):
             _perform_operator_signup()
 
+# Gestione errori
+def _parse_backend_error(response):
+    """
+    Interpreta e restituisce un messaggio di errore leggibile proveniente dal backend,
+    rimuovendo prefissi tecnici come 'Value error,' o 'Type error,'.
+    """
+    try:
+        data = response.json()
+
+        # Caso 1: errore standard FastAPI
+        if isinstance(data, dict) and "detail" in data:
+            detail = data["detail"]
+            if isinstance(detail, list):
+                messages = [_clean_msg(err.get("msg", str(err))) for err in detail]
+                return " | ".join(messages)
+            return _clean_msg(str(detail))
+
+        # Caso 2: lista di errori Pydantic
+        elif isinstance(data, list):
+            messages = []
+            for err in data:
+                msg = _clean_msg(err.get("msg", "Errore di validazione"))
+                loc = " → ".join(str(x) for x in err.get("loc", []))
+                if loc:
+                    messages.append(f"{loc}: {msg}")
+                else:
+                    messages.append(msg)
+            return " | ".join(messages)
+
+        # Caso 3: JSON valido ma sconosciuto
+        return f"Errore sconosciuto: {data}"
+
+    except ValueError:
+        return f"Errore HTTP {response.status_code}: {response.text}"
+
+def _clean_msg(msg: str) -> str:
+    """
+    Rimuove prefissi tecnici e formatta il messaggio in modo leggibile.
+    """
+    msg = msg.strip()
+    # Elimina prefissi come "Value error," o "Type error,"
+    if msg.lower().startswith("value error,"):
+        msg = msg[len("value error,"):].strip()
+    elif msg.lower().startswith("type error,"):
+        msg = msg[len("type error,"):].strip()
+    elif msg.lower().startswith("assertion error,"):
+        msg = msg[len("assertion error,"):].strip()
+    return msg.capitalize()
+
 def _perform_patient_signup():
     """
     Esegue la registrazione del paziente
     """
-    # Validazione campi
     if not all([st.session_state.firstname,
                 st.session_state.lastname,
                 st.session_state.birth_date,
@@ -144,7 +194,6 @@ def _perform_patient_signup():
         st.session_state.signup_error_paziente = ("Le password non coincidono!", "🚨")
         st.rerun()
     else:
-        # Payload da inviare al backend
         payload = {
             "firstname": st.session_state.firstname,
             "lastname": st.session_state.lastname,
@@ -160,20 +209,24 @@ def _perform_patient_signup():
                 json=payload,
                 headers={"Content-Type": "application/json"}
             )
+
             if response.status_code == 200:
-                st.session_state.patient_signup_success = True  # FLAG di successo
-                st.session_state.view = "home"  # Torno alla home
+                st.session_state.patient_signup_success = True
+                st.session_state.view = "patient-login"
                 st.rerun()
             else:
-                # Gestione errore, anche in caso di duplicato
-                try:
-                    error = response.json().get("detail", "Errore nella registrazione. Riprova.")
-                except ValueError:
-                    error = f"Errore HTTP {response.status_code}: {response.text}"
-                st.session_state.signup_error_paziente = (error, "🚨")
+                error_message = _parse_backend_error(response)
+                st.session_state.signup_error_paziente = (error_message, "🚨")
                 st.rerun()
+
+        except requests.exceptions.ConnectionError:
+            st.session_state.signup_error_paziente = ("Impossibile connettersi al server.", "🚨")
+            st.rerun()
+        except requests.exceptions.Timeout:
+            st.session_state.signup_error_paziente = ("Timeout nella connessione.", "🚨")
+            st.rerun()
         except Exception as e:
-            st.session_state.signup_error_paziente = (f"Errore di connessione: {e}", "🚨")
+            st.session_state.signup_error_paziente = (f"Errore imprevisto: {e}", "🚨")
             st.rerun()
 
 def _perform_operator_signup():
@@ -208,17 +261,22 @@ def _perform_operator_signup():
                 json=payload,
                 headers={"Content-Type": "application/json"}
             )
+
             if response.status_code == 200:
-                st.session_state.operator_signup_success = True  # FLAG di successo
-                st.session_state.view = "home"  # Torno alla home
+                st.session_state.operator_signup_success = True
+                st.session_state.view = "operator-login"
                 st.rerun()
             else:
-                try:
-                    error = response.json().get("detail", "Errore nella registrazione. Riprova.")
-                except ValueError:
-                    error = f"Errore HTTP {response.status_code}: {response.text}"
-                st.session_state.signup_error_operatore = (error, "🚨")
+                error_message = _parse_backend_error(response)
+                st.session_state.signup_error_paziente = (error_message, "🚨")
                 st.rerun()
+
+        except requests.exceptions.ConnectionError:
+            st.session_state.signup_error_operatore = ("Impossibile connettersi al server.", "🚨")
+            st.rerun()
+        except requests.exceptions.Timeout:
+            st.session_state.signup_error_operatore = ("Timeout nella connessione.", "🚨")
+            st.rerun()
         except Exception as e:
-            st.session_state.signup_error_operatore = (f"Errore di connessione: {e}", "🚨")
+            st.session_state.signup_error_operatore = (f"Errore imprevisto: {e}", "🚨")
             st.rerun()
