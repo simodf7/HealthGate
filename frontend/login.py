@@ -48,16 +48,9 @@ def login_interface():
         st.error(error_message, icon=error_icon)
         st.session_state.login_error = None
 
-    col1, col2 = st.columns([1, 4])
     
-    with col1:
-        if st.button("Annulla", key="cancel_login", use_container_width=True):
-            st.session_state.view = "home"
-            st.rerun()
-    
-    with col2:
-        if st.button("Accedi", key="login_button", use_container_width=True):
-            _perform_login()
+    if st.button("Accedi", key="login_button", use_container_width=True):
+        _perform_login()
 
 def _perform_login():
     """

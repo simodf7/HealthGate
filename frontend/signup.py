@@ -7,10 +7,28 @@ Modulo per il signup.
 import streamlit as st
 import requests
 import datetime
+import pandas as pd
 from config import CSS_STYLE, PAGE_ICON
 
 today = datetime.date.today()
 maxDate = today.replace(year=today.year - 18)  # Utente deve avere almeno 18 anni
+
+# Caricamento lista dei comuni italiani
+@st.cache_data
+def load_comuni():
+    try:
+        # Il file usa ";" come separatore
+        df = pd.read_csv("frontend/birthplaces/comuni_italiani.csv", sep=";", dtype=str)
+
+        # Usa la colonna 'denominazione_ita' per i nomi dei comuni
+        comuni = sorted(df["denominazione_ita"].dropna().unique().tolist())
+        return comuni
+
+    except Exception as e:
+        st.warning(f"Impossibile caricare la lista dei comuni: {e}")
+        return []
+
+COMUNI_ITALIANI = load_comuni()
 
 def signup_interface():
     """
@@ -38,67 +56,74 @@ def signup_interface():
         if st.button("Torna alla Home", key="cancel_patient_signup_returnhome", icon="🏠", use_container_width=True):
             st.session_state.view = "home"
             st.rerun()
-    
-    st.write("Seleziona il tipo di utente da registrare:")
+
+    #st.write("Seleziona il tipo di utente da registrare:")
     user_type = st.radio("Tipo utente", ["Paziente", "Operatore"], horizontal=True)
 
     error_message = None
     error_icon = None
 
     if user_type == "Paziente":
-        st.session_state.firstname = st.text_input("Nome", key="signup_patient_firstname")
-        st.session_state.lastname = st.text_input("Cognome", key="signup_patient_lastname")
-        st.session_state.birth_date = st.date_input("Data di nascita",
-            value=maxDate,
-            max_value=maxDate, # Almeno 18 anni
-            min_value=datetime.date(1900, 1, 1),
-            help="Devi avere almeno 18 anni per registrarti.",
-            key="signup_patient_birth_date")
-        st.session_state.sex = st.selectbox("Sesso", ["M", "F"], key="signup_patient_sex")
-        st.session_state.birth_place = st.text_input("Luogo di nascita", key="signup_patient_birth_place")
-        st.session_state.signup_password = st.text_input("Password", type="password", key="signup_patient_password")
-        st.session_state.signup_confirm_password = st.text_input("Conferma Password", type="password", key="signup_patient_confirm_password")
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.session_state.firstname = st.text_input("Nome", key="signup_patient_firstname")
+            st.session_state.sex = st.selectbox("Sesso", ["M", "F"], key="signup_patient_sex")
+
+        with col2:
+            st.session_state.lastname = st.text_input("Cognome", key="signup_patient_lastname")
+            st.session_state.birth_date = st.date_input("Data di nascita",
+                value=maxDate,
+                max_value=maxDate, # Almeno 18 anni
+                min_value=datetime.date(1900, 1, 1),
+                help="Devi avere almeno 18 anni per registrarti.",
+                key="signup_patient_birth_date")
+
+        st.session_state.birth_place = st.selectbox(
+            "Luogo di nascita",
+            options=[""] + COMUNI_ITALIANI,
+            key="signup_patient_birth_place",
+            help="Seleziona il comune di nascita."
+        )
+
+        col1_final, col2_final = st.columns(2)
+
+        with col1_final:
+            st.session_state.signup_password = st.text_input("Password", type="password", key="signup_patient_password")
+
+        with col2_final:  
+            st.session_state.signup_confirm_password = st.text_input("Conferma Password", type="password", key="signup_patient_confirm_password")
 
         if st.session_state.get("signup_error_paziente"):
             error_message, error_icon = st.session_state.signup_error_paziente
             st.error(error_message, icon=error_icon)
             st.session_state.signup_error_paziente = None
 
-        col1, col2 = st.columns([1, 4])
-        
-        with col1:
-            if st.button("Annulla", key="cancel_patient_signup", use_container_width=True):
-                st.session_state.view = "home"
-                st.rerun()
-        
-        with col2:
-            if st.button("Registrati come Paziente", key="signup_patient_button", use_container_width=True):
-                _perform_patient_signup()
+        if st.button("Registrati come Paziente", key="signup_patient_button", use_container_width=True):
+            _perform_patient_signup()
 
     elif user_type == "Operatore":
         st.session_state.med_register_code = st.text_input("Codice Albo Medico", key="signup_operator_med_register_code")
-        st.session_state.firstname = st.text_input("Nome", key="signup_operator_firstname")
-        st.session_state.lastname = st.text_input("Cognome", key="signup_operator_lastname")
-        st.session_state.email = st.text_input("Email", key="signup_operator_email")
-        st.session_state.phone_number = st.text_input("Numero di telefono", key="signup_operator_phone_number")
-        st.session_state.signup_password = st.text_input("Password", type="password", key="signup_operator_password")
-        st.session_state.signup_confirm_password = st.text_input("Conferma Password", type="password", key="signup_operator_confirm_password")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.session_state.firstname = st.text_input("Nome", key="signup_operator_firstname")
+            st.session_state.email = st.text_input("Email", key="signup_operator_email")
+            st.session_state.signup_password = st.text_input("Password", type="password", key="signup_operator_password")
+
+        with col2:
+            st.session_state.lastname = st.text_input("Cognome", key="signup_operator_lastname")
+            st.session_state.phone_number = st.text_input("Numero di telefono", key="signup_operator_phone_number")
+            st.session_state.signup_confirm_password = st.text_input("Conferma Password", type="password", key="signup_operator_confirm_password")
 
         if st.session_state.get("signup_error_operatore"):
             error_message, error_icon = st.session_state.signup_error_operatore
             st.error(error_message, icon=error_icon)
             st.session_state.signup_error_operatore = None
 
-        col1, col2 = st.columns([1, 4])
-        
-        with col1:
-            if st.button("Registrati come Operatore", key="signup_operator_button", use_container_width=True):
-                _perform_operator_signup()
-        
-        with col2:
-            if st.button("Annulla", key="cancel_operator_signup", use_container_width=True):
-                st.session_state.view = "home"
-                st.rerun()
+        if st.button("Registrati come Operatore", key="signup_operator_button", use_container_width=True):
+            _perform_operator_signup()
 
 def _perform_patient_signup():
     """

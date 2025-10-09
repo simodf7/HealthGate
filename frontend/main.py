@@ -11,7 +11,7 @@ from datetime import datetime
 import login
 import signup
 from config import CSS_STYLE, PAGE_ICON
-from streamlit_navigation_bar import st_navbar
+# from streamlit_navigation_bar import st_navbar
 
 # Percorsi ai moduli
 sys.path.append('./frontend')
