@@ -2,7 +2,7 @@
 # = CSS OPTIONS
 # ===================================================
 
-PAGE_ICON = "frontend/logo/logo-3-squared.jpeg"
+PAGE_ICON = "./frontend/logo/logo-3-squared-nobg.png"
 PAGE_ICON_OLD = "🚑"
 
 # ===================================================

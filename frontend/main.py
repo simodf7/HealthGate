@@ -141,13 +141,15 @@ def interface():
             if st.button("Autenticati come Paziente", key="patient_login_start", icon="🙋"):
                 print_debug("Utente ha cliccato Autenticati come Paziente")
                 st.session_state.view = "patient-login"
+                # st.session_state.view = "patient-logged" # debug
                 st.rerun()
 
         with col2:
             st.header("Sei un Operatore Sanitario?")
             if st.button("Autenticati come Operatore Sanitario", key="operator_login_start", icon="🧑‍⚕️"):
                 print_debug("Utente ha cliccato Autenticati come Operatore Sanitario")
-                st.session_state.view = "operator-login"
+                # st.session_state.view = "operator-login"
+                st.session_state.view = "operator-logged" # debug
                 st.rerun()
 
         with col3:
@@ -167,10 +169,10 @@ def interface():
     
     # Gestione viste dopo login
     if st.session_state.view == "patient-logged":
-        import patient
-        patient.interface()
+        import patient_ui
+        patient_ui.interface()
         return
     elif st.session_state.view == "operator-logged":
-        import operator
-        operator.interface()
+        import operator_ui
+        operator_ui.interface()
         return

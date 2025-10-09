@@ -6,8 +6,6 @@ Modulo per il login.
 
 import streamlit as st
 import requests
-import patient
-import operator
 from config import CSS_STYLE, PAGE_ICON
 
 def login_interface():
@@ -64,13 +62,13 @@ def _perform_login():
 
     # Request da inviare al Gateway
     if st.session_state.view == "patient-login":
-        url = "http://localhost:8001/login/patient"
+        url = "http://localhost:8000/login/patient"
         payload = {
             "social_sec_number": st.session_state.username,
             "password": st.session_state.login_password
         }
     else:  # operator login
-        url = "http://localhost:8001/login/operator"
+        url = "http://localhost:8000/login/operator"
         payload = {
             "med_register_code": st.session_state.username,
             "password": st.session_state.login_password

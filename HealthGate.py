@@ -16,8 +16,8 @@ frontend_path = os.path.join(current_dir, 'frontend')
 sys.path.append(frontend_path)
 
 import main
-import operator
-import patient
+import patient_ui
+import operator_ui
 import login
 import signup
 import streamlit as st
@@ -35,6 +35,6 @@ elif st.session_state.view == "operator-login":
 elif st.session_state.view == "signup":
     signup.signup_interface()
 elif st.session_state.view == "patient-logged":
-    patient.interface()
+    patient_ui.interface()
 elif st.session_state.view == "operator-logged":
-    operator.interface()
+    operator_ui.interface()

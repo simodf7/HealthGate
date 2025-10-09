@@ -155,7 +155,7 @@ def _perform_patient_signup():
 
         try:
             response = requests.post(
-                "http://localhost:8001/signup/patient",
+                "http://localhost:8000/signup/patient",
                 json=payload,
                 headers={"Content-Type": "application/json"}
             )
@@ -203,7 +203,7 @@ def _perform_operator_signup():
 
         try:
             response = requests.post(
-                "http://localhost:8001/signup/operator",
+                "http://localhost:8000/signup/operator",
                 json=payload,
                 headers={"Content-Type": "application/json"}
             )
