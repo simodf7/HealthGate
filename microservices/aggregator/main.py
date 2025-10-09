@@ -5,14 +5,14 @@ from config import AUTH_SERVICE_URL, REPORT_SERVICE_URL, ROUTE_AUTH_SERVICE, ROU
 from datetime import date
 
 @asynccontextmanager
-async def lifespan():
-    app.state.client = await httpx.AsyncClient(timeout=20.0)
-    app.state.today = await date.today()
+async def lifespan(app: FastAPI):
+    app.state.client = httpx.AsyncClient(timeout=20.0)
+    app.state.today = date.today()
     yield  # to be executed at shutdown
     await app.state.client.aclose()
 
 
-app = FastAPI("Aggregator service", lifespan=lifespan)
+app = FastAPI(title="Aggregator service", lifespan=lifespan)
 
 
 @app.get("/")
@@ -20,7 +20,7 @@ async def health_check():
     return {"status": "T'appost Aggregator running!"}
 
 @app.get("/aggregator/{patient_id}")
-async def get_patient_context(patient_id: id):
+async def get_patient_context(patient_id: int):
     auth_resp = await app.state.client.get(f"{AUTH_SERVICE_URL}{ROUTE_AUTH_SERVICE}/{patient_id}")
     report_resp = await app.state.client.get(f"{REPORT_SERVICE_URL}{ROUTE_REPORT_SERVICE}/{patient_id}")
     

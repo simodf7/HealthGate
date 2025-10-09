@@ -39,7 +39,15 @@ services:
     networks:
       - microservices-network
 
-
+  ingestion:
+    build: microservices/ingestion
+    container_name: ingestion
+    ports:
+      - "8002:8002"
+    env_file:
+      - microservices/ingestion/.env
+    networks:
+      - microservices-network
 
 
 
@@ -67,6 +75,31 @@ services:
       - microservices/decision-engine/.env
     depends_on:
       - chroma
+    networks:
+      - microservices-network
+
+
+  report-management:
+    build: microservices/report-management
+    container_name: report-management
+    ports:
+      - "8004:8004"
+    env_file:
+      - microservices/report-management/.env
+    networks:
+      - microservices-network
+
+
+  aggregator:
+    build: microservices/aggregator
+    container_name: aggregator
+    ports:
+      - "8005:8005"
+    depends_on:
+      - auth
+      - report-management
+    env_file:
+      - microservices/aggregator/.env
     networks:
       - microservices-network
 

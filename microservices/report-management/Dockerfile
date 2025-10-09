@@ -1,0 +1,29 @@
+# 1. Immagine base con Python 3.13
+FROM python:3.13-slim
+
+
+
+# 2. Imposta la cartella di lavoro
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    pkg-config \
+    libcairo2-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# 3. Copia i file delle dipendenze
+COPY requirements.txt .
+
+# 4. Installa le dipendenze
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 5. Copia tutto il codice
+COPY . .
+
+# 6. Espone la porta su cui gira FastAPI
+EXPOSE 8004
+
+# 7. Comando per avviare l'app
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8004"]
+
