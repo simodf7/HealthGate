@@ -1,0 +1,51 @@
+@startuml sequence_diagram_REPORT
+title 📄 Sequence Diagram - Report Management Service (Progettazione Funzionale)
+
+actor Frontend as FE
+participant "API Gateway" as GW
+participant "Report Management Service" as REPORT
+database "MongoDB (reports)" as DB
+participant "Anagrafica Service" as ANA
+participant "PDF Generator" as PDF
+
+== Flusso generale di creazione report ==
+
+FE -> GW: Richiesta POST /report\n(dati clinici, CF, data, sintomi)
+GW -> REPORT: Forward richiesta autenticata
+REPORT -> DB: Salvataggio documento report
+DB --> REPORT: Conferma inserimento (report_id)
+REPORT --> GW: Risposta JSON {success, report_id}
+GW --> FE: Restituzione conferma creazione
+
+== Ricerca report di un paziente ==
+
+FE -> GW: GET /reports/id/{patient_id}
+GW -> REPORT: Richiesta lista report
+REPORT -> DB: Query per patient_id
+DB --> REPORT: Lista report trovati
+REPORT --> GW: Restituisce lista report
+GW --> FE: Mostra report sul frontend
+
+== Aggiornamento di un report ==
+
+FE -> GW: PUT /report/{report_id}
+GW -> REPORT: Richiesta aggiornamento diagnosi/trattamento
+REPORT -> DB: Update documento esistente
+DB --> REPORT: Conferma aggiornamento
+REPORT --> GW: Esito operazione (success)
+GW --> FE: Mostra conferma
+
+== Generazione PDF del referto ==
+
+FE -> GW: GET /report/pdf/{report_id}
+GW -> REPORT: Richiesta generazione PDF
+REPORT -> DB: Recupera report dal database
+DB --> REPORT: Dati report
+REPORT -> ANA: Richiede anagrafica paziente
+ANA --> REPORT: Dati anagrafici (nome, età, sesso, ecc.)
+REPORT -> PDF: genera_scheda_pdf_da_json(dati_completi)
+PDF --> REPORT: File PDF generato
+REPORT --> GW: Restituisce PDF o link di download
+GW --> FE: Mostra referto scaricabile
+
+@enduml
