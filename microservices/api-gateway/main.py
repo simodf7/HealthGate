@@ -149,7 +149,7 @@ async def signup_proxy(request: Request):
 
 # Get User data
 
-@app.get("/user/profile/")
+@app.get("/user/profile/{patient_id}")
 async def user_proxy(request: Request):
     return await proxy_request(request, "post", MICROSERVICES['auth'])
 
@@ -181,7 +181,32 @@ async def signup_proxy(request: Request):
 async def diagnose_proxy(request: Request):
     return await proxy_request(request, "post", MICROSERVICES["ingest"], "patient")
 
-## Report Management service route
-@app.post("/report")
-async def generate_pdf_proxy(request: Request):
-    return await proxy_request(request, "post", MICROSERVICES["report"], "operator")
+
+
+## report 
+
+
+## ROUTE PER RICAVARE I REPORT DI UN PAZIENTE
+
+@app.get("/reports/id/{patient_id}")
+async def find_reports_proxy(request: Request):
+    return await proxy_request(request, "get", MICROSERVICES["report"], "patient")
+
+
+@app.get("/reports/ssn/{social_sec_number}")
+async def find_reports_proxy(request: Request):
+    return await proxy_request(request, "get", MICROSERVICES["report"], "operator")
+
+
+## ROUTE PER AGGIORNARE UN SINGOLO REPORT
+@app.put("/report/{report_id}")
+async def update_report_proxy(request: Request):
+    return await proxy_request(request, "put", MICROSERVICES["report"], "operator")
+
+    
+## ROUTE PER GENERARE UN PDF 
+@app.get("/report/pdf/{report_id}")
+async def pdf_report_proxy(request: Request):
+    return await proxy_request(request, "get", MICROSERVICES['report'])
+
+

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scheda Paziente - HealthGate</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚑</text></svg>">
+    <style>
+        @page { size: A4; margin: 5mm; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: sans-serif;
+            font-size: 9pt;
+            line-height: 1.1;
+            color: #000;
+            background: white;
+            margin: 0;
+            padding: 0;
+        }
+        .scheda {
+            width: 210mm;
+            height: 297mm;
+            border-collapse: collapse;
+            font-family: sans-serif;
+            font-size: 9pt;
+            line-height: 1.1;
+            margin: 0 auto;
+            display: table;
+            table-layout: fixed;
+        }
+        .scheda td:nth-child(1) { width: 105mm; }
+        .scheda td:nth-child(2) { width: 105mm; }
+        .scheda tr.header-main { height: 12mm; }
+        .scheda tr.dati-anagrafici { height: 50mm; }
+        .scheda tr.visita-info { height: 30mm; }
+        .scheda tr.diagnosi-sintomi { height: 60mm; }
+        .scheda tr.trattamento { height: 50mm; }
+        .scheda tr.decisione { height: 60mm; }
+        .scheda th, .scheda td {
+            border: 0.5pt solid #000;
+            padding: 2mm;
+            vertical-align: top;
+        }
+        .scheda th { font-weight: bold; }
+        .bordo-pesante { border: 1.2pt solid #000; }
+        .bg-gray { background-color: #e0e0e0; }
+        .text-center { text-align: center; font-weight: bold; }
+        .text-left { text-align: left; }
+        .field {
+            display: inline-block;
+            border-bottom: 0.5pt dotted #000;
+            padding: 0 2mm;
+            min-width: 30mm;
+        }
+        .multiline {
+            white-space: pre-line;
+            font-size: 8pt;
+        }
+        @media print {
+            body { margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; }
+            .scheda { width: 210mm; height: 297mm; page-break-inside: avoid; }
+            .bg-gray { background-color: #e0e0e0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; }
+            .bordo-pesante { border: 1.2pt solid #000 !important; }
+        }
+    </style>
+</head>
+<body>
+    <table class="scheda">
+        <thead>
+            <tr class="header-main">
+                <th class="text-left bordo-pesante" style="font-size: 14pt; vertical-align: middle;">HealthGate</th>
+                <th class="text-center bordo-pesante" style="font-size: 10pt; vertical-align: middle;">Report Paziente</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Dati Anagrafici -->
+            <tr class="dati-anagrafici">
+                <td colspan="2" class="bordo-pesante">
+                    <div style="font-weight: bold; font-size: 10pt; text-align: center; background: #e0e0e0; padding: 2mm; margin-bottom: 3mm;">
+                        Dati Anagrafici Paziente
+                    </div>
+                    <div style="margin-bottom: 2mm;">
+                        <strong>Nome:</strong> <span class="field">{{ firstname or '' }}</span>
+                    </div>
+                    <div style="margin-bottom: 2mm;">
+                        <strong>Cognome:</strong> <span class="field">{{ lastname or '' }}</span>
+                    </div>
+                    <div style="margin-bottom: 2mm;">
+                        <strong>Data di nascita:</strong> <span class="field">{{ birth_date or '' }}</span>
+                        <strong style="margin-left: 10mm;">Sesso:</strong> <span class="field">{{ sex or '' }}</span>
+                    </div>
+                    <div style="margin-bottom: 2mm;">
+                        <strong>Luogo di nascita:</strong> <span class="field">{{ birth_place or '' }}</span>
+                    </div>
+                    <div style="margin-bottom: 2mm;">
+                        <strong>Codice Fiscale:</strong> <span class="field">{{ social_sec_number or '' }}</span>
+                    </div>
+                </td>
+            </tr>
+
+            <!-- Informazioni Visita -->
+            <tr class="visita-info">
+                <td class="bordo-pesante">
+                    <div style="font-weight: bold; font-size: 10pt; text-align: center; background: #e0e0e0; padding: 2mm; margin-bottom: 3mm;">
+                        Informazioni Visita
+                    </div>
+                    <div style="margin-bottom: 2mm;">
+                        <strong>Data visita:</strong> <span class="field">{{ data or '' }}</span>
+                    </div>
+                    <div style="margin-bottom: 2mm;">
+                        <strong>ID Report:</strong> <span class="field">{{ id or '' }}</span>
+                    </div>
+                </td>
+                <td class="bordo-pesante">
+                    <div style="font-weight: bold; font-size: 10pt; text-align: center; background: #e0e0e0; padding: 2mm; margin-bottom: 3mm;">
+                        Data Creazione
+                    </div>
+                    <div style="margin-bottom: 2mm;">
+                        <strong>Creato il:</strong> <span class="field">{{ created_at or '' }}</span>
+                    </div>
+                </td>
+            </tr>
+
+            <!-- Diagnosi e Sintomi -->
+            <tr class="diagnosi-sintomi">
+                <td class="bordo-pesante">
+                    <div style="font-weight: bold; font-size: 10pt; text-align: center; background: #e0e0e0; padding: 2mm; margin-bottom: 3mm;">
+                        Diagnosi
+                    </div>
+                    <div class="multiline">{{ diagnosi or '' }}</div>
+                </td>
+                <td class="bordo-pesante">
+                    <div style="font-weight: bold; font-size: 10pt; text-align: center; background: #e0e0e0; padding: 2mm; margin-bottom: 3mm;">
+                        Sintomi
+                    </div>
+                    <div class="multiline" style="height: 45mm;">{{ sintomi or '' }}</div>
+                </td>
+            </tr>
+
+            <!-- Trattamento -->
+            <tr class="trattamento">
+                <td colspan="2" class="bordo-pesante">
+                    <div style="font-weight: bold; font-size: 10pt; text-align: center; background: #e0e0e0; padding: 2mm; margin-bottom: 3mm;">
+                        Trattamento
+                    </div>
+                    <div class="multiline" style="height: 40mm;">{{ trattamento or '' }}</div>
+                </td>
+            </tr>
+
+            <!-- Decisione Medica -->
+            <tr class="decisione">
+                <td class="bordo-pesante">
+                    <div style="font-weight: bold; font-size: 10pt; text-align: center; background: #e0e0e0; padding: 2mm; margin-bottom: 3mm;">
+                        Decisione
+                    </div>
+                    <div>{{ decisione or '' }}</div>
+                </td>
+                <td class="bordo-pesante">
+                    <div style="font-weight: bold; font-size: 10pt; text-align: center; background: #e0e0e0; padding: 2mm; margin-bottom: 3mm;">
+                        Motivazione
+                    </div>
+                    <div class="multiline" style="height: 45mm;">{{ motivazione or '' }}</div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

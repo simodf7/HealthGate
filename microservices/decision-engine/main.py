@@ -1,3 +1,4 @@
+import datetime
 from fastapi import FastAPI, HTTPException, Request
 import httpx
 from pydantic import BaseModel
@@ -6,7 +7,7 @@ from typing import Dict
 from model import load_all
 import json
 import re
-from config import AGGREGATOR_SERVICE, AGGREGATOR_ROUTE
+from config import *
 
 """
 @asynccontextmanager
@@ -67,7 +68,6 @@ async def diagnose(req: ClinicalRequest, request: Request):
         resp = await client.get(f"{AGGREGATOR_SERVICE}{AGGREGATOR_ROUTE}/{user_id}")
         resp.raise_for_status()
         
-
         response = graph.invoke({"sintomi": req.sintomi, "age": resp['age'], "sex": resp['sex'], "reports": resp['reports']})
          
         # Verifica che 'answer' sia presente e non None
@@ -79,7 +79,23 @@ async def diagnose(req: ClinicalRequest, request: Request):
             return {"decisione": "N/A", "motivazione": "LLM non ha restituito dati"}
         
         answer_text = re.sub(r"^```json\s*|```$", "", raw_answer.strip(), flags=re.MULTILINE)
-    
-        return json.loads(answer_text)  # rimuove eventuali backticks
+
+        answer_json = json.loads(answer_text)
+        
+        # Costruisci il payload per /report
+        report_payload = {
+            "patient_id": resp['patient_id'],
+            "social_sec_number": resp['social_sec_number'],
+            "date": datetime.now().strftime("%Y-%m-%d"),
+            "sintomi": req.sintomi,
+            "motivazione": answer_json.get("motivazione", ""),
+            "diagnosi": "",
+            "trattamento": ""
+        }
+        
+        response = await client.post(f"{REPORT_SERVICE_URL}{REPORT_ROUTE}", payload = report_payload)
+
+
+        return answer_json 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

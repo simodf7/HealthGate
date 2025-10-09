@@ -21,19 +21,38 @@ async def health_check():
 
 @app.get("/aggregator/{patient_id}")
 async def get_patient_context(patient_id: id):
-        auth_resp = await app.state.client.get(f"{AUTH_SERVICE_URL}{ROUTE_AUTH_SERVICE}/{patient_id}")
-        report_resp = await app.state.client.get(f"{REPORT_SERVICE_URL}{ROUTE_REPORT_SERVICE}/{patient_id}")
-        
-        if auth_resp.status_code != 200 or report_resp.status_code != 200:
-            raise HTTPException(status_code=500, detail="Failed to fetch data")
+    auth_resp = await app.state.client.get(f"{AUTH_SERVICE_URL}{ROUTE_AUTH_SERVICE}/{patient_id}")
+    report_resp = await app.state.client.get(f"{REPORT_SERVICE_URL}{ROUTE_REPORT_SERVICE}/{patient_id}")
     
-        age = app.state.today.year - auth_resp['birth_date'].year - (
+    if auth_resp.status_code != 200 or report_resp.status_code != 200:
+        raise HTTPException(status_code=500, detail="Failed to fetch data")
+    
+    age = app.state.today.year - auth_resp['birth_date'].year - (
         (app.state.today.month, app.state.today.day) < (auth_resp['birth_date'].month, auth_resp['birth_date'].day)
         )
-        
-        return {
-            "patient_id": patient_id,
-            "age": age, 
-            "sex": auth_resp["sex"],
-            "reports": reports
+
+
+    report_data = report_resp.json()
+
+
+    # 🔹 Estrazione campi dai report
+    reports_list = [
+        {
+            "data": r["date"],
+            "motivazione": r["motivazione"],
+            "diagnosi": r["diagnosi"],
+            "sintomi": r["sintomi"],
+            "trattamento": r["trattamento"]
         }
+        for r in report_data
+    ]
+
+    # 🔹 Risposta aggregata
+    return {
+        "patient_id": patient_id,
+        "social_sec_number": auth_resp['social_sec_number'],
+        "age": age,
+        "sex": auth_resp["sex"],
+        "reports": reports_list
+    }
+    
