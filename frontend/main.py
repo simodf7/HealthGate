@@ -140,8 +140,8 @@ def interface():
             st.header("Sei un Paziente?")
             if st.button("Autenticati come Paziente", key="patient_login_start", icon="🙋"):
                 print_debug("Utente ha cliccato Autenticati come Paziente")
-                st.session_state.view = "patient-login"
-                # st.session_state.view = "patient-logged" # debug
+                # st.session_state.view = "patient-login"
+                st.session_state.view = "patient-logged" # debug
                 st.rerun()
 
         with col2:

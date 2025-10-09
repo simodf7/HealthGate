@@ -14,7 +14,7 @@ today = datetime.date.today()
 maxDate = today.replace(year=today.year - 18)  # Utente deve avere almeno 18 anni
 
 # Caricamento lista dei comuni italiani
-@st.cache_data
+@st.cache_data(ttl=1200)
 def load_comuni():
     try:
         # Il file usa ";" come separatore
