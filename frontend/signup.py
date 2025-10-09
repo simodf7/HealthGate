@@ -77,7 +77,8 @@ def signup_interface():
                 max_value=maxDate, # Almeno 18 anni
                 min_value=datetime.date(1900, 1, 1),
                 help="Devi avere almeno 18 anni per registrarti.",
-                key="signup_patient_birth_date")
+                key="signup_patient_birth_date",
+                format="DD/MM/YYYY")
 
         st.session_state.birth_place = st.selectbox(
             "Luogo di nascita",

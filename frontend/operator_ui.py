@@ -123,7 +123,11 @@ def render_data_filter_section(df):
             datetime.today().date(),
             datetime.today().date()
         )
-        date_range = st.date_input("Filtra report per data:", (min_date, max_date), min_value=min_date, max_value=max_date)
+        date_range = st.date_input("Filtra report per data:",
+            (min_date, max_date),
+            min_value=min_date,
+            max_value=max_date,
+            format="DD/MM/YYYY")
 
     st.divider()
     filtered_reports = df.copy()
