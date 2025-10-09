@@ -28,13 +28,13 @@ if "view" not in st.session_state:
 # Avvio dell'interfaccia principale
 if st.session_state.view == "home":
     main.interface()
-elif st.session_state.view == "patient-login":
-    login.login_interface()
-elif st.session_state.view == "operator-login":
-    login.login_interface()
+elif st.session_state.view == "patient-login" or st.session_state.view == "operator-login":
+    login.interface()
 elif st.session_state.view == "signup":
-    signup.signup_interface()
-elif st.session_state.view == "patient-logged":
-    patient_ui.interface()
+    signup.interface()
+elif st.session_state.view == "patient-logged-symptoms":
+    patient_ui.symptom_interface()
+elif st.session_state.view == "patient-logged-reports":
+    patient_ui.reports_interface()
 elif st.session_state.view == "operator-logged":
     operator_ui.interface()

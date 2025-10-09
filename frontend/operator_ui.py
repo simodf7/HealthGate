@@ -8,7 +8,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 import os
-from config import CSS_STYLE, PAGE_ICON
+from config import CSS_STYLE, PAGE_ICON, initialize_session_state, logout_form
 
 # --- CONFIGURAZIONE PERCORSI ---
 base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -74,8 +74,7 @@ def get_record_by_id(record_id):
 
 def render_pagination_control(total_pages):
     """Crea e gestisce un controllo di paginazione personalizzato."""
-    if 'current_page' not in st.session_state:
-        st.session_state.current_page = 1
+    
     
     st.session_state.current_page = min(st.session_state.current_page, total_pages)
     st.session_state.current_page = max(1, st.session_state.current_page)
@@ -83,11 +82,11 @@ def render_pagination_control(total_pages):
     col1, col2, col3, col4, col5 = st.columns([1.5, 1.5, 2, 1.5, 1.5])
 
     with col1:
-        if st.button("<< Inizio", use_container_width=True, disabled=(st.session_state.current_page == 1)):
+        if st.button("<< Inizio", use_container_width=True, disabled=(st.session_state.current_page == 1), type="primary"):
             st.session_state.current_page = 1
             st.rerun()
     with col2:
-        if st.button("< Prec.", use_container_width=True, disabled=(st.session_state.current_page == 1)):
+        if st.button("< Prec.", use_container_width=True, disabled=(st.session_state.current_page == 1), type="primary"):
             st.session_state.current_page -= 1
             st.rerun()
     with col3:
@@ -97,11 +96,11 @@ def render_pagination_control(total_pages):
             unsafe_allow_html=True
         )
     with col4:
-        if st.button("Succ. >", use_container_width=True, disabled=(st.session_state.current_page == total_pages)):
+        if st.button("Succ. >", use_container_width=True, disabled=(st.session_state.current_page == total_pages), type="primary"):
             st.session_state.current_page += 1
             st.rerun()
     with col5:
-        if st.button("Fine >>", use_container_width=True, disabled=(st.session_state.current_page == total_pages)):
+        if st.button("Fine >>", use_container_width=True, disabled=(st.session_state.current_page == total_pages), type="primary"):
             st.session_state.current_page = total_pages
             st.rerun()
 
@@ -123,7 +122,11 @@ def render_data_filter_section(df):
             datetime.today().date(),
             datetime.today().date()
         )
-        date_range = st.date_input("Filtra report per data:", (min_date, max_date), min_value=min_date, max_value=max_date)
+        date_range = st.date_input("Filtra report per data:",
+            (min_date, max_date),
+            min_value=min_date,
+            max_value=max_date,
+            format="DD/MM/YYYY")
 
     st.divider()
     filtered_reports = df.copy()
@@ -198,7 +201,25 @@ def render_data_filter_section(df):
                             st.markdown(f"**Trattamento:** {treatment}")
                         
                         # Bottone PDF
-                        if st.button("📄 Genera PDF", key=f"pdf_{report_id}", use_container_width=True):
+                        if st.button("📄 Genera PDF", key=f"pdf_{report_id}", use_container_width=True, type="primary"):
+                            col1, col2 = st.columns([9,1], gap="medium")
+
+                            with col1:
+                                # st.pdf("microservices/report-management/pdf/20251006_133030_Campanella_Ale-Report.pdf", height="stretch")
+                                pdf_path = "microservices/report-management/pdf/20251006_133030_Campanella_Ale-Report.pdf" # placeholder
+                                pdf_filename = "20251006_133030_Campanella_Ale-Report.pdf" # placeholder
+                                st.pdf(pdf_path, height=350)
+                            
+                            with col2:
+                                with open(pdf_path, "rb") as pdf_file:
+                                    st.download_button(
+                                        label="📩 Scarica PDF",
+                                        data=pdf_file.read(),
+                                        file_name=pdf_filename,
+                                        mime="application/pdf",
+                                        key=f"download_{report_id}"
+                                    )
+                            '''
                             with st.spinner("Generazione PDF..."):
                                 full_record = get_record_by_id(str(report_id))
                                 if full_record:
@@ -218,6 +239,7 @@ def render_data_filter_section(df):
                                         )
                                 else:
                                     st.error("Dati completi non trovati.")
+                                '''
     else:
         st.info("Nessun paziente corrisponde ai criteri di ricerca.")
 
@@ -232,12 +254,14 @@ def interface():
 
     st.markdown(CSS_STYLE, unsafe_allow_html=True)
 
-    """Funzione principale dell'interfaccia operatore."""
-    if st.session_state.get('patient_login_success'):
+    # Gestione toast per successo registrazione/login
+    if st.session_state.operator_login_success:
         st.toast(f"Rieccoti, {st.session_state.firstname} {st.session_state.lastname}!", icon="✅")
-        st.session_state.patient_login_success = False
+        st.session_state.operator_login_success = False  # Resetto il FLAG
 
-    col1, col2 = st.columns([3, 1])
+    # === BARRA SUPERIORE ===
+    col1, col2 = st.columns([5, 2])
+    
     with col1:
         st.header("🪪 Ricerca report")
     with col2:
@@ -245,9 +269,10 @@ def interface():
         with subcol1:
             st.markdown(f"Ciao, **{st.session_state.firstname.upper()} {st.session_state.lastname.upper()}**!")
         with subcol2:
-            if st.button("Logout"):
-                st.session_state.view = "home"
-                st.rerun()
+            if st.button("🚪 Logout", type="primary"):
+                logout_form()
+                # st.session_state.view = "home"
+                # st.rerun()
     
     st.divider()
     
@@ -255,8 +280,5 @@ def interface():
     if df.empty:
         st.warning("⚠️ Nessun dato trovato. Usa i placeholder per testare l'interfaccia.")
         return
-
-    if "pdf_to_download" not in st.session_state:
-        st.session_state.pdf_to_download = None
 
     render_data_filter_section(df)

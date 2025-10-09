@@ -87,6 +87,11 @@ async def login(data: OperatorLoginRequest, db: AsyncSession = Depends(get_db)):
         "access_token": token,
         "token_type": "bearer",
         "operator_id": operator.id,
+        "med_register_code": operator.med_register_code,
+        "firstname": operator.firstname,
+        "lastname": operator.lastname,
+        "email": operator.email,
+        "phone_number": operator.phone_number
     }
 
 
@@ -116,7 +121,3 @@ async def get_user_profile(patient_id:int, db: AsyncSession = Depends(get_db)):
         "sex": patient.sex,
         "birth_place": patient.birth_place
     }
-
-
-
-

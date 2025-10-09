@@ -9,7 +9,7 @@ class State(TypedDict):
     sintomi: str
     age: int
     sex: str
-    report: List[Dict]
+    reports: List[Dict]
     context: List[Document]
     answer: str
 
@@ -24,9 +24,9 @@ def retrieve(state: State, vector_store):
         for report in state["reports"]:
             r_text = (
                 f"Report precedente - Sintomi: {report.get('sintomi', '')}. "
-                f"Diagnosi: {report.get('diagnosi', '')}. "
-                f"Trattamento: {report.get('trattamento', '')}. "
                 f"Motivazione della visita: {report.get('motivazione', '')}."
+                f"Diagnosi del medico del pronto soccorso: {report.get('diagnosi', '')}. "
+                f"Trattamento del medico del pronto soccorso: {report.get('trattamento', '')}. "
             )
             reports_text.append(r_text)
 
@@ -48,21 +48,24 @@ def retrieve(state: State, vector_store):
 
 
 def generate(state: State, llm):
-    #print("\n\n--- STATE ---\n\n")
-    #print("context: ", state['context'])
-    #print("sintomi: ", state['sintomi'])
-    #print("storia_paziente: ", state['storia_paziente'])
-
-    #print("\n\n-----\n\n")
-
     docs_content = "\n\n".join("'" + doc.page_content + "'" for doc in state["context"])
 
     print("\n\n--- DOCS CONTENT ---\n\n")
     print(docs_content)
     print("\n\n-----\n\n")
 
+    report_text = "\n".join(
+        f"- Data Report: {r.get('data', 'N/A')}\n"
+        f"  Sintomi: {r.get('sintomi', 'N/A')}\n"
+        f"  Motivazioni date dall'LLM: {r.get('motivazioni', 'N/A')}\n"
+        f"  Diagnosi del medico del pronto soccorso: {r.get('diagnosi', 'N/A')}\n"
+        f"  Trattamento del medico del pronto soccorso: {r.get('trattamento', 'N/A')}\n"
+        for r in state["reports"]
+    )
 
-    messages = prompt.invoke({"sintomi": state["sintomi"], "age": state["age"], "sex": state['sex'], "report": state['report'], "context": docs_content})
+
+
+    messages = prompt.invoke({"sintomi": state["sintomi"], "age": state["age"], "sex": state['sex'], "report": report_text, "context": docs_content})
     response = llm.invoke(messages, temperature=0)
     return {"answer": response.content}
 
@@ -82,7 +85,7 @@ prompt_template = """
     - Classificare se il paziente deve recarsi al pronto soccorso immediatamente o se non è necessario.
     - Fornire una motivazione concisa basata sui documenti forniti.
     
-    L'input che ricevi è strutturato come segue:
+    Input: 
 
     - Sintomi attuali del paziente: {sintomi}
     - Età del paziente: {age}
