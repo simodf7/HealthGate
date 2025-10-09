@@ -1,0 +1,68 @@
+@startuml activity_diagram_API
+title Activity Diagram - API Gateway (Progettazione Funzionale)
+
+skinparam backgroundColor #FDFEFE
+skinparam activity {
+  BackgroundColor #000080
+  BorderColor #000060
+  FontColor white
+  DiamondBackgroundColor #0086b3
+  DiamondBorderColor #004466
+  StartColor #C0392B
+  EndColor #C0392B
+}
+
+start
+
+:Ricezione richiesta dal Frontend (utente o operatore);
+
+:Analizza la richiesta e identifica il tipo di operazione;
+note right
+Esempi:
+- Registrazione/Login
+- Diagnosi
+- Generazione Report
+end note
+
+if (Richiesta di autenticazione?) then (Sì)
+  :Invia direttamente al servizio di autenticazione;
+  :Attendi risposta e inoltra al frontend;
+  stop
+else (No)
+  :Richiede token di accesso (JWT);
+endif
+
+if (Token valido e non scaduto?) then (Sì)
+  :Verifica ruolo dell’utente in base al tipo di richiesta;
+  if (Ruolo autorizzato?) then (Sì)
+    :Autenticazione e autorizzazione completate;
+  else (No)
+    :Genera errore "Accesso negato";
+    stop
+  endif
+else (No)
+  :Genera errore "Token non valido o scaduto";
+  stop
+endif
+
+:Seleziona il microservizio di destinazione;
+note right
+- Auth Service per autenticazione  
+- Ingestion Service per diagnosi  
+- Report Service per referti
+end note
+
+if (Richiesta di diagnosi?) then (Sì)
+  :Instrada la richiesta verso il modulo di acquisizione (Ingestion);
+endif
+
+:Prepara e inoltra la richiesta al microservizio appropriato;
+
+if (Risposta ricevuta correttamente?) then (Sì)
+  :Restituisci al frontend l’esito della richiesta;
+else (No)
+  :Genera errore "Servizio non raggiungibile";
+endif
+
+stop
+@enduml

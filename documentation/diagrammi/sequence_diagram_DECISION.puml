@@ -1,0 +1,49 @@
+@startuml sequence_diagram_DECISION
+title Sequence Diagram - Decision Engine (Progettazione Funzionale)
+
+skinparam backgroundColor #FFFFFF
+skinparam sequence {
+  ArrowColor #000080
+  LifeLineBorderColor #000080
+  LifeLineBackgroundColor #C0392B
+  ParticipantBackgroundColor #000080 
+  ParticipantFontColor #FFFFFF 
+  FontColor #000060 
+}
+
+actor "API Gateway / Ingestion Service" as GATEWAY
+participant "Decision Engine" as DEC
+participant "Aggregator Service" as AGG
+participant "Motore Cognitivo (LLM)" as LLM
+participant "Report Service" as REP
+
+== Richiesta di Diagnosi ==
+GATEWAY -> DEC : Invio richiesta di diagnosi\n(dati sintomi + identificativo utente)
+activate DEC
+
+== Recupero contesto paziente ==
+DEC -> AGG : Richiesta dati anagrafici e clinici del paziente
+AGG --> DEC : Restituzione contesto paziente\n(età, sesso, storico report)
+
+alt Contesto disponibile
+    DEC -> LLM : Invia sintomi + dati paziente per elaborazione cognitiva
+    LLM --> DEC : Restituisce risultato diagnostico\n(decisione e motivazione)
+else Contesto non disponibile
+    DEC -> DEC : Genera errore funzionale\n"Contesto paziente non reperibile"
+    DEC --> GATEWAY : Messaggio di errore diagnostico
+    deactivate DEC
+    return
+end
+
+== Elaborazione del risultato ==
+DEC -> DEC : Valida la risposta e struttura l’esito finale
+
+== Restituzione dell’esito ==
+DEC --> GATEWAY : Restituisce decisione e motivazione
+note right
+Il risultato sarà utilizzato dal Report Service
+per la generazione del referto clinico.
+end note
+
+deactivate DEC
+@enduml

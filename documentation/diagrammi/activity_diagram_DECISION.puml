@@ -1,0 +1,54 @@
+@startuml activity_diagram_DECISION
+title ⚙️ Activity Diagram - Decision Engine (Progettazione Funzionale)
+
+skinparam backgroundColor #FDFEFE
+skinparam activity {
+  BackgroundColor #000080
+  BorderColor #000060
+  FontColor white
+  DiamondBackgroundColor #0086b3
+  DiamondBorderColor #004466
+  StartColor #C0392B
+  EndColor #C0392B
+}
+
+start
+
+:Ricezione richiesta di diagnosi;
+note right
+La richiesta contiene i sintomi del paziente
+e l’identificativo dell’utente autenticato.
+end note
+
+:Verifica la presenza dell'identificativo utente;
+if (Identificativo presente?) then (Sì)
+  :Richiedi al servizio Aggregator i dati del paziente;
+  if (Aggregator disponibile?) then (Sì)
+    :Ricevi contesto clinico\n(età, sesso, storico report);
+  else (No)
+    :Genera errore di sistema "Contesto non disponibile";
+    stop
+  endif
+else (No)
+  :Errore di autenticazione;
+  stop
+endif
+
+:Combina i dati ricevuti con i sintomi correnti;
+:Avvia il motore cognitivo (LLM);
+:Analizza input e genera ipotesi diagnostica;
+
+if (Risposta prodotta?) then (Sì)
+  :Valida e struttura la risposta\n(decisione, motivazione);
+else (No)
+  :Crea risposta di errore\n(decisione N/A);
+endif
+
+:Restituisce esito diagnostico al servizio chiamante;
+note right
+Il risultato sarà poi usato dal Report Service
+per la generazione del referto.
+end note
+
+stop
+@enduml

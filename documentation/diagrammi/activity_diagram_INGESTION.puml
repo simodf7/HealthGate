@@ -1,0 +1,38 @@
+@startuml activity_diagram_INGESTION
+title Activity Diagram - Ingestion Service (Progettazione Funzionale)
+
+skinparam backgroundColor #FDFEFE
+skinparam activity {
+  BackgroundColor #000080
+  BorderColor #000060
+  FontColor white
+  DiamondBackgroundColor #0086b3
+  DiamondBorderColor #004466
+  StartColor #C0392B
+  EndColor #C0392B
+}
+
+start
+
+:Ricezione richiesta di acquisizione dati;
+
+:Verifica del tipo di input fornito;
+
+if (Input è audio?) then (Sì)
+  :Avvia processo di trascrizione automatica;
+  :Genera testo corrispondente all’audio;
+elseif (Input è testo?) then (Sì)
+  :Utilizza direttamente il testo fornito;
+else (No)
+  :Genera messaggio di errore;
+  stop
+endif
+
+:Effettua correzione linguistica del testo;
+:Valida il contenuto acquisito;
+
+:Invia i dati al Decision Engine per l’elaborazione diagnostica;
+:Restituisce conferma di acquisizione al richiedente;
+
+stop
+@enduml

@@ -1,0 +1,54 @@
+@startuml sequence_diagram_INGESTION
+title Sequence Diagram - Ingestion Service (Progettazione Funzionale)
+
+skinparam backgroundColor #FFFFFF
+skinparam sequence {
+  ArrowColor #000080
+  LifeLineBorderColor #000080
+  LifeLineBackgroundColor #C0392B
+  ParticipantBackgroundColor #000080 
+  ParticipantFontColor #FFFFFF 
+  FontColor #000060 
+}
+
+actor "Utente / API Gateway" as CLIENT
+participant "Ingestion Service" as ING
+participant "Modulo Trascrizione" as TRANSCRIBE
+participant "Modulo Correzione" as CORR
+participant "Gestione Dati" as DATA
+participant "Decision Engine" as DEC
+
+== Avvio processo di acquisizione ==
+CLIENT -> ING : Richiesta di acquisizione dati (audio o testo)
+activate ING
+
+== Analisi del tipo di input ==
+ING -> ING : Identifica tipologia di contenuto fornito
+
+alt Input di tipo audio
+    ING -> TRANSCRIBE : Avvia processo di trascrizione
+    TRANSCRIBE --> ING : Restituisce testo trascritto
+else Input di tipo testuale
+    ING -> ING : Utilizza testo fornito direttamente
+else Input non valido
+    ING -> CLIENT : Segnala errore di input non valido
+    deactivate ING
+    return
+end
+
+== Elaborazione del contenuto ==
+ING -> CORR : Effettua correzione linguistica del testo
+CORR --> ING : Testo corretto validato
+
+ING -> DATA : Registra i dati elaborati
+DATA --> ING : Conferma salvataggio
+
+== Invio per l’elaborazione diagnostica ==
+ING -> DEC : Trasmette testo e informazioni per la valutazione clinica
+DEC --> ING : Restituisce risultato dell’elaborazione
+
+== Chiusura processo ==
+ING -> CLIENT : Invia esito e conferma elaborazione
+deactivate ING
+
+@enduml

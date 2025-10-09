@@ -1,0 +1,118 @@
+@startuml diagramma
+title HealthGate - Block Definition Diagram
+
+skinparam backgroundColor #FFFFFF
+skinparam class {
+  BackgroundColor #000080
+  BorderColor #C0392B
+  FontColor #FFFFFF
+  AttributeFontColor #FFFFFF
+  StereotypeFontColor #FFFFFF
+  FontSize 12
+  ArrowColor #C0392B
+}
+
+' ===== BLOCCO PRINCIPALE =====
+class "«block» HealthGate System" as SYSTEM {
+  systemType : Distributed Microservice Architecture
+}
+
+' ===== LIVELLO 1 - API GATEWAY =====
+class "«block» API Gateway" as GW {
+  + Gestione richieste utente
+  + Verifica autenticazione
+  + Smistamento verso microservizi
+}
+
+' ===== LIVELLO 2 -  SERVICES =====
+class "«block» Auth Service" as AUTH {
+  + Login / Registrazione
+  + Validazione credenziali
+  + Generazione token
+}
+
+class "«block» Ingestion Service" as ING {
+  + Acquisizione input clinico
+  + Trascrizione e correzione testo
+  + Invio al Decision Engine
+}
+
+class "«block» Decision Engine" as DEC {
+  + Analisi sintomi
+  + Recupero contesto paziente
+  + Generazione decisione clinica
+}
+
+class "«block» Aggregator Service" as AGG {
+  + Fusione dati anagrafici e clinici
+  + Creazione contesto paziente
+}
+
+class "«block» Report Service" as REP {
+  + Generazione referto diagnostico
+  + Archiviazione report
+}
+
+' ===== LIVELLO 3 - FLOW SPECIFICATIONS =====
+class "«flowSpecification» Clinical Input" as FLOW1 {
+  + sintomi : String
+  + tipo_input : String
+}
+
+class "«flowSpecification» Patient Context" as FLOW2 {
+  + eta : int
+  + sesso : String
+  + report_storici : List
+}
+
+class "«flowSpecification» Diagnostic Result" as FLOW3 {
+  + decisione : String
+  + motivazione : String
+}
+
+class "«flowSpecification» Clinical Report" as FLOW4 {
+  + file_referto : PDF
+  + riepilogo : String
+}
+
+' ===== RELAZIONI GERARCHICHE =====
+SYSTEM *-- GW
+SYSTEM *-- AUTH
+SYSTEM *-- ING
+SYSTEM *-- DEC
+SYSTEM *-- AGG
+SYSTEM *-- REP
+
+' ===== RELAZIONI FUNZIONALI =====
+GW --> AUTH : autenticazione
+GW --> ING : invio input clinico
+GW --> REP : richiesta referto
+
+ING --> DEC : dati preprocessati
+DEC --> AGG : richiesta contesto
+AGG --> AUTH : dati anagrafici
+AGG --> REP : storico clinico
+DEC --> REP : decisione clinica
+REP --> GW : referto finale
+
+' ===== COLLEGAMENTI DEI FLUSSI (ROSSI TRATTEGGIATI) =====
+FLOW1 -[#C0392B,dotted]-> ING : input clinico
+FLOW2 -[#C0392B,dotted]-> DEC : contesto paziente
+FLOW3 -[#C0392B,dotted]-> REP : esito decisionale
+FLOW4 -[#C0392B,dotted]-> GW : referto finale
+
+' ===== LAYOUT VERTICALE  =====
+top to bottom direction
+
+SYSTEM -[hidden]-> GW
+GW -[hidden]-> AUTH
+AUTH -[hidden]-> ING
+ING -[hidden]-> DEC
+DEC -[hidden]-> AGG
+AGG -[hidden]-> REP
+REP -[hidden]-> FLOW1
+FLOW1 -[hidden]-> FLOW2
+FLOW2 -[hidden]-> FLOW3
+FLOW3 -[hidden]-> FLOW4
+
+@enduml

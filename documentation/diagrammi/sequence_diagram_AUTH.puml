@@ -1,0 +1,40 @@
+@startuml sequence_diagram_AUTH
+title Sequence Diagram - Auth Service (Progettazione Funzionale)
+
+skinparam backgroundColor #FFFFFF
+skinparam sequence {
+  ArrowColor #000080
+  LifeLineBorderColor #000080
+  LifeLineBackgroundColor #C0392B
+  ParticipantBackgroundColor #000080 
+  ParticipantFontColor #FFFFFF 
+  FontColor #000060 
+}
+
+actor "Utente / API Gateway" as CLIENT
+participant "Auth Service" as AUTH
+participant "Archivio Utenti" as USER_DB
+participant "Report Management Service" as REP
+
+== Autenticazione dell’Utente ==
+CLIENT -> AUTH : Richiesta di accesso (dati identificativi)
+activate AUTH
+
+AUTH -> USER_DB : Verifica delle credenziali e del profilo utente
+USER_DB --> AUTH : Esito verifica (dati utente o errore)
+
+alt Credenziali valide
+    AUTH -> AUTH : Identifica ruolo dell’utente
+    alt Utente = Paziente
+        AUTH -> REP : Sincronizzazione dati anagrafici
+        REP --> AUTH : Conferma aggiornamento dati
+    else Utente = Operatore
+        AUTH -> AUTH : Nessuna sincronizzazione richiesta
+    end
+    AUTH -> CLIENT : Conferma autenticazione\n+ informazioni profilo e permessi
+else Credenziali non valide
+    AUTH -> CLIENT : Messaggio di errore\n"Accesso non autorizzato"
+end
+
+deactivate AUTH
+@enduml

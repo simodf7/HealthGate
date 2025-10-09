@@ -1,0 +1,41 @@
+@startuml activity_diagram_AUTH
+title Activity Diagram - Auth Service (Progettazione Funzionale)
+
+skinparam backgroundColor #FDFEFE
+skinparam activity {
+  BackgroundColor #000080
+  BorderColor #000060
+  FontColor white
+  DiamondBackgroundColor #0086b3
+  DiamondBorderColor #004466
+  StartColor #C0392B
+  EndColor #C0392B
+}
+
+start
+
+:Ricezione richiesta di accesso\n(con credenziali utente);
+
+:Verifica della presenza e correttezza delle credenziali;
+
+if (Credenziali valide?) then (Sì)
+  :Identificazione del tipo di utente\n(paziente o operatore);
+
+  if (Utente è paziente?) then (Sì)
+    :Avvia sincronizzazione dei dati\ncon il servizio di gestione report;
+    if (Sincronizzazione completata?) then (Sì)
+      :Conferma aggiornamento dei dati anagrafici;
+    else (No)
+      :Segnala mancata sincronizzazione\nma continua il processo di login;
+    endif
+  endif
+
+  :Registra evento di accesso riuscito;
+  :Prepara risposta con informazioni utente e permessi;
+  :Invia esito positivo al richiedente;
+else (No)
+  :Genera messaggio di errore\n"Accesso non autorizzato";
+endif
+
+stop
+@enduml

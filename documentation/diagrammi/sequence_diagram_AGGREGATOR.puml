@@ -1,0 +1,37 @@
+@startuml sequence_diagram_AGGREGATOR
+title Sequence Diagram - Aggregator Service (Progettazione Funzionale)
+
+skinparam backgroundColor #FFFFFF
+skinparam sequence {
+  ArrowColor #000080
+  LifeLineBorderColor #000080
+  LifeLineBackgroundColor #C0392B
+  ParticipantBackgroundColor #000080 
+  ParticipantFontColor #FFFFFF 
+  FontColor #000060 
+}
+
+actor "API Gateway / Servizio Richiedente" as GATEWAY
+participant "Aggregator Service" as AGG
+participant "Auth Service" as AUTH
+participant "Report Management Service" as REP
+
+== Richiesta di Aggregazione ==
+GATEWAY -> AGG : Richiesta informazioni paziente (patient_id)
+activate AGG
+
+== Raccolta Dati ==
+AGG -> AUTH : Richiede dati anagrafici del paziente
+AUTH --> AGG : Restituisce informazioni di base\n(nome, data di nascita, sesso)
+
+AGG -> REP : Richiede storico clinico e report associati
+REP --> AGG : Restituisce elenco dei report disponibili
+
+== Elaborazione ==
+AGG -> AGG : Calcola età del paziente e unifica le informazioni
+AGG -> AGG : Crea struttura informativa aggregata\n(con dati anagrafici + storico clinico)
+
+== Risposta ==
+AGG --> GATEWAY : Restituisce contesto paziente aggregato
+deactivate AGG
+@enduml
