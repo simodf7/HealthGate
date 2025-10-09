@@ -147,6 +147,15 @@ async def signup_proxy(request: Request):
     return await proxy_request(request, "post", MICROSERVICES["auth"])
 
 
+# Get User data
+
+@app.get("/user/profile/")
+async def user_proxy(request: Request):
+    return await proxy_request(request, "post", MICROSERVICES['auth'])
+
+
+
+
 """  Uniti in un'unica rotta
 ## Ingestion service route
 @app.post("/ingestion")

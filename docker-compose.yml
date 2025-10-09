@@ -11,6 +11,7 @@ services:
     depends_on:
       - auth
       - auth-db
+      - chroma
     networks:
       - microservices-network
 
@@ -30,11 +31,42 @@ services:
     image: postgres:15
     container_name: auth-db
     env_file:
-      - microservices/auth/.env   # qui metti solo le variabili DB del database
+      - microservices/auth/.env
     ports:
       - "5432:5432"
     volumes:
       - auth-db-data:/var/lib/postgresql/data
+    networks:
+      - microservices-network
+
+
+
+
+
+  chroma:
+    image: ghcr.io/chroma-core/chroma:latest
+    container_name: chroma
+    ports:
+      - "8010:8000"                            # <── Espone 8010 sul tuo host
+    volumes:
+      - \chroma 
+    environment:
+      - ALLOW_RESET=true
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+
+  
+  decision:
+    build: microservices/decision-engine
+    container_name: decision
+    ports:
+      - "8003:8003"
+    env_file:
+      - microservices/decision-engine/.env
+    depends_on:
+      - chroma
     networks:
       - microservices-network
 

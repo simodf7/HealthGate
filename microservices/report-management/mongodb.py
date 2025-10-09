@@ -1,10 +1,10 @@
 import certifi
+from fastapi import HTTPException
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from config import MONGO_DB_NAME, MONGO_URI
 from datetime import datetime
-from pg_db import get_patient_anagrafica
-
+from bson import ObjectId
 
 async def connect_db(): 
     try:
@@ -17,29 +17,49 @@ async def connect_db():
         )
         client.admin.command('ping')
         print("Connessione a MongoDB Atlas riuscita!")
-        return client 
+
+
+        db = client[MONGO_DB_NAME]
+
+        return db 
     except Exception as e:
         print("Errore connessione MongoDB:", e)
 
 
-async def get_db(client: MongoClient):
-    # Seleziona il database
-    db = client[MONGO_DB_NAME]
 
-    # Definisci le collection
-    return db["reports"]
     
 
 # ----------------------------------------------------------
 # FUNZIONI
 # ----------------------------------------------------------
 
-def get_reports_by_patient(db, patient_id: str):
+async def get_reports(collection):
+    return list(collection.find(limit=100))
+
+
+async def get_report_by_id(collection, report_id: str):
+    oid = ObjectId(report_id)
+    return collection.find_one({"_id": oid})
+
+async def get_reports_by_patient_id(collection, patient_id: int):
     """Restituisce tutti i report clinici di un paziente ordinati per data."""
-    return list(db.find({"patient_id": patient_id}).sort("data", 1))
+    return list(collection.find({"patient_id": patient_id}).sort("data", 1))
 
+async def get_reports_by_patient_ssn(collection, social_sec_number : str):
+    """Restituisce tutti i report clinici di un paziente ordinati per data."""
+    return list(collection.find({"social_sec_number": social_sec_number})).sort("data", 1)
 
-def save_report(patient_id: str, db, report_data: dict):
+async def modify_report(collection, report_id:str, diagnosi:str, trattamento:str):
+    oid = ObjectId(report_id)
+    result = collection.update_one({"_id": oid}, {"$set": {"diagnosi": diagnosi, "trattamento": trattamento}})
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Report non trovato")
+
+    return collection.find_one({"_id": oid})
+    
+
+async def save_report(collection, report_data: dict):
     """Salva un nuovo report clinico nel DB e restituisce l'ID del report."""
     
     # converti date in stringhe
@@ -50,31 +70,7 @@ def save_report(patient_id: str, db, report_data: dict):
     report_data["created_at"] = datetime.now().isoformat()
     
     # Inserisci il documento e ottieni il risultato
-    result = db.insert_one(report_data)
+    result = collection.insert_one(report_data)
     
     # Restituisci l'ID del documento inserito come stringa
     return str(result.inserted_id)
-
-
-def save_report_with_anagrafica(patient_id: int, db, report_data: dict):
-    """
-    Salva un report clinico su MongoDB includendo l'anagrafica recuperata da PostgreSQL.
-    """
-    anagrafica = get_patient_anagrafica(patient_id)
-    if anagrafica:
-        # unisci i dati dell'anagrafica al report
-        report_data.update(anagrafica)
-
-    # chiama la save_report "normale"
-    return save_report(patient_id, db, report_data)
-
-
-
-def cerca_paziente_per_codice_fiscale(db, cf: str):
-    """
-    Cerca il paziente più recente in MongoDB tramite codice fiscale.
-    """
-    return db.find_one(
-        {"social_sec_number": cf},
-        sort=[("created_at", -1)]
-    )

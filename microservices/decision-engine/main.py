@@ -25,9 +25,10 @@ async def lifespan(app: FastAPI):
 async def lifespan(app: FastAPI):
     global embedding_model, llm, vector_store, graph, client
     llm, embedding_model, vector_store, graph = await load_all()
-    client = await httpx.AsyncClient()
+    client = httpx.AsyncClient(timeout=20.0)
     print("Modelli caricati correttamente.")
     yield
+    await client.aclose()
 
 
 

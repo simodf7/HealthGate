@@ -5,6 +5,11 @@ from typing_extensions import Annotated
 import re
 
 
+class OperatorRequest(BaseModel):
+    patient_id: str
+
+
+
 class PatientSignupRequest(BaseModel):
     firstname: Annotated[str, Field(min_length=2, max_length=30)]
     lastname: Annotated[str, Field(min_length=2, max_length=30)]

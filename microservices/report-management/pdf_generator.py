@@ -25,12 +25,12 @@ Funzioni principali:
 - crea_report_medico(dati_report, filename, template_path)
 """
 
-import json
+
+import asyncio
 import os
 from datetime import datetime
 from bs4 import BeautifulSoup
-from playwright.sync_api import sync_playwright
-import traceback
+from playwright.async_api import async_playwright
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 template_path = os.path.abspath(os.path.join(base_dir, "scheda_paziente.html"))
@@ -211,7 +211,7 @@ def genera_scheda_da_json(dati_json, output_html=None, template_path=template_pa
         }
 
 
-def stampa_html_in_pdf(html_path, output_pdf):
+async def stampa_html_in_pdf(html_path, output_pdf):
     """
     Converte un file HTML in PDF utilizzando Playwright e Chromium.
 
@@ -226,12 +226,12 @@ def stampa_html_in_pdf(html_path, output_pdf):
         Exception: Per errori durante la conversione
     """
     try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch()
-            page = browser.new_page()
-            page.goto(f'file://{html_path}')
+        async with async_playwright() as p:
+            browser = await p.chromium.launch()
+            page = await browser.new_page()
+            await page.goto(f'file://{html_path}')
             
-            page.pdf(
+            await page.pdf(
                 path=output_pdf, 
                 format="A4", 
                 print_background=True,
@@ -243,7 +243,7 @@ def stampa_html_in_pdf(html_path, output_pdf):
                 }
             )
             
-            browser.close()
+            await browser.close()
             
         # print(f"✅ PDF generato con successo: {output_pdf}")
         
@@ -252,7 +252,7 @@ def stampa_html_in_pdf(html_path, output_pdf):
         raise
 
 
-def genera_scheda_pdf_da_json(dati_json, output_pdf=None, template_path=template_path, mantieni_html=False):
+async def genera_scheda_pdf_da_json(dati_json, output_pdf=None, template_path=template_path, mantieni_html=False):
     """
     Funzione completa che genera una scheda paziente PDF partendo da dati JSON.
     Correzioni:
@@ -314,9 +314,11 @@ def genera_scheda_pdf_da_json(dati_json, output_pdf=None, template_path=template
 
     html_path = risultato_html["html"]
 
+    
+
     # Converti HTML -> PDF
     try:
-        stampa_html_in_pdf(html_path, output_pdf)
+        await stampa_html_in_pdf(html_path, output_pdf)
     except Exception as e:
         # pulizia in caso di errore
         if not mantieni_html and os.path.exists(html_path):

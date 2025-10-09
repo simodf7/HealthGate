@@ -1,5 +1,6 @@
 # Ambiente virtuale
 venv/
+venv_*/
 __pycache__/
 *.pyc
 
@@ -30,5 +31,3 @@ varie/*.pdf
 
 chroma/
 linee_indirizzo.txt
-venv/
-venv_auth/
