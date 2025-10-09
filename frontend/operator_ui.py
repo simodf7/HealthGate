@@ -246,6 +246,7 @@ def interface():
             st.markdown(f"Ciao, **{st.session_state.firstname.upper()} {st.session_state.lastname.upper()}**!")
         with subcol2:
             if st.button("Logout"):
+                st.session_state.view = "home"
                 st.rerun()
     
     st.divider()

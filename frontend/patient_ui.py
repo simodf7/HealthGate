@@ -5,7 +5,6 @@ Modulo per la schermata relativa al paziente.
 """
 
 import streamlit as st
-import main
 import os
 from datetime import datetime
 from config import CSS_STYLE, PAGE_ICON
@@ -42,8 +41,8 @@ def interface():
             st.markdown(f"Ciao, **{st.session_state.firstname.upper()} {st.session_state.lastname.upper()}**!")
         with subcol2:
             if st.button("Logout"):
+                st.session_state.view = "home"
                 st.rerun()
-                main.interface()
     
     st.divider()
 
