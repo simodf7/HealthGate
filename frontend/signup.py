@@ -55,7 +55,7 @@ def interface():
         st.header("Registrazione utente")
 
     with col2_header:
-        if st.button("Torna alla Home", key="cancel_patient_signup_returnhome", icon="🏠", use_container_width=True):
+        if st.button("Torna alla Home", key="cancel_patient_signup_returnhome", icon="🏠", use_container_width=True, type="primary"):
             st.session_state.view = "home"
             st.rerun()
 
@@ -102,7 +102,7 @@ def interface():
             st.error(error_message, icon=error_icon)
             st.session_state.signup_error_paziente = None
 
-        if st.button("Registrati come Paziente", key="signup_patient_button", use_container_width=True):
+        if st.button("Registrati come Paziente", key="signup_patient_button", use_container_width=True, type="primary"):
             _perform_patient_signup()
 
     elif user_type == "Operatore":
@@ -125,7 +125,7 @@ def interface():
             st.error(error_message, icon=error_icon)
             st.session_state.signup_error_operatore = None
 
-        if st.button("Registrati come Operatore", key="signup_operator_button", use_container_width=True):
+        if st.button("Registrati come Operatore", key="signup_operator_button", use_container_width=True, type="primary"):
             _perform_operator_signup()
 
 # Gestione errori

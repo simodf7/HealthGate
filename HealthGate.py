@@ -32,7 +32,9 @@ elif st.session_state.view == "patient-login" or st.session_state.view == "opera
     login.interface()
 elif st.session_state.view == "signup":
     signup.interface()
-elif st.session_state.view == "patient-logged":
-    patient_ui.interface()
+elif st.session_state.view == "patient-logged-symptoms":
+    patient_ui.symptom_interface()
+elif st.session_state.view == "patient-logged-reports":
+    patient_ui.reports_interface()
 elif st.session_state.view == "operator-logged":
     operator_ui.interface()
