@@ -6,7 +6,8 @@ Modulo per il login.
 
 import streamlit as st
 import requests
-from config import CSS_STYLE, PAGE_ICON
+from config_css import CSS_STYLE, PAGE_ICON
+from config import URL_GATEWAY
 
 
 def _clean_msg(msg: str) -> str:
@@ -89,7 +90,7 @@ def interface():
     with col1_header:
         st.header("Login utente")
     with col2_header:
-        if st.button("Torna alla Home", key="cancel_patient_login", icon="🏠", use_container_width=True):
+        if st.button("Torna alla Home", key="cancel_patient_login", icon="🏠", use_container_width=True, type="primary"):
             st.session_state.view = "home"
             st.rerun()
 
@@ -107,7 +108,7 @@ def interface():
         st.error(error_message, icon=error_icon)
         st.session_state.login_error = None
 
-    if st.button("Accedi", key="login_button", use_container_width=True):
+    if st.button("Accedi", key="login_button", use_container_width=True, type="primary"):
         _perform_login()
 
 
@@ -121,13 +122,17 @@ def _perform_login():
         return
 
     if st.session_state.view == "patient-login":
-        url = "http://localhost:8000/login/patient"
+        st.session_state.social_sec_number = st.session_state.username # Update del codice fiscale
+
+        url = f"{URL_GATEWAY}/login/patient"
         payload = {
             "social_sec_number": st.session_state.username,
             "password": st.session_state.login_password
         }
     else:  # operator login
-        url = "http://localhost:8000/login/operator"
+        st.session_state.med_register_code = st.session_state.username # Update del register code
+        
+        url = f"{URL_GATEWAY}/login/operator"
         payload = {
             "med_register_code": st.session_state.username,
             "password": st.session_state.login_password
@@ -147,7 +152,7 @@ def _perform_login():
                 st.session_state.birth_date = data.get("birth_date")
                 st.session_state.sex = data.get("sex")
                 st.session_state.birth_place = data.get("birth_place")
-                st.session_state.view = "patient-logged"
+                st.session_state.view = "patient-logged-symptoms" 
                 st.session_state.patient_login_success = True
 
             elif st.session_state.view == "operator-login":

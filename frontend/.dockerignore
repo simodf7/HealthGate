@@ -1,0 +1,12 @@
+.venv
+venv_*
+env
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.mypy_cache
+.pytest_cache
+.DS_Store
+birthplaces
+input_files/*

@@ -57,7 +57,7 @@ services:
     ports:
       - "8010:8000"                            # <── Espone 8010 sul tuo host
     volumes:
-      - \chroma 
+      - ./chroma:/chroma
     environment:
       - ALLOW_RESET=true
     networks:
@@ -103,6 +103,19 @@ services:
     networks:
       - microservices-network
 
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./frontend:/app
+    depends_on:
+      - api-gateway
+    networks:
+      - microservices-network
+
+   
 volumes:
   auth-db-data:
 

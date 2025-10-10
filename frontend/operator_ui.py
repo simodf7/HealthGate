@@ -8,7 +8,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 import os
-from config import CSS_STYLE, PAGE_ICON
+from config_css import CSS_STYLE, PAGE_ICON, initialize_session_state, logout_form
 
 # --- CONFIGURAZIONE PERCORSI ---
 base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -82,11 +82,11 @@ def render_pagination_control(total_pages):
     col1, col2, col3, col4, col5 = st.columns([1.5, 1.5, 2, 1.5, 1.5])
 
     with col1:
-        if st.button("<< Inizio", use_container_width=True, disabled=(st.session_state.current_page == 1)):
+        if st.button("<< Inizio", use_container_width=True, disabled=(st.session_state.current_page == 1), type="primary"):
             st.session_state.current_page = 1
             st.rerun()
     with col2:
-        if st.button("< Prec.", use_container_width=True, disabled=(st.session_state.current_page == 1)):
+        if st.button("< Prec.", use_container_width=True, disabled=(st.session_state.current_page == 1), type="primary"):
             st.session_state.current_page -= 1
             st.rerun()
     with col3:
@@ -96,11 +96,11 @@ def render_pagination_control(total_pages):
             unsafe_allow_html=True
         )
     with col4:
-        if st.button("Succ. >", use_container_width=True, disabled=(st.session_state.current_page == total_pages)):
+        if st.button("Succ. >", use_container_width=True, disabled=(st.session_state.current_page == total_pages), type="primary"):
             st.session_state.current_page += 1
             st.rerun()
     with col5:
-        if st.button("Fine >>", use_container_width=True, disabled=(st.session_state.current_page == total_pages)):
+        if st.button("Fine >>", use_container_width=True, disabled=(st.session_state.current_page == total_pages), type="primary"):
             st.session_state.current_page = total_pages
             st.rerun()
 
@@ -201,7 +201,7 @@ def render_data_filter_section(df):
                             st.markdown(f"**Trattamento:** {treatment}")
                         
                         # Bottone PDF
-                        if st.button("📄 Genera PDF", key=f"pdf_{report_id}", use_container_width=True):
+                        if st.button("📄 Genera PDF", key=f"pdf_{report_id}", use_container_width=True, type="primary"):
                             col1, col2 = st.columns([9,1], gap="medium")
 
                             with col1:
@@ -255,11 +255,13 @@ def interface():
     st.markdown(CSS_STYLE, unsafe_allow_html=True)
 
     # Gestione toast per successo registrazione/login
-    if st.session_state.patient_login_success:
+    if st.session_state.operator_login_success:
         st.toast(f"Rieccoti, {st.session_state.firstname} {st.session_state.lastname}!", icon="✅")
-        st.session_state.patient_login_success = False  # Resetto il FLAG
+        st.session_state.operator_login_success = False  # Resetto il FLAG
 
-    col1, col2 = st.columns([3, 1])
+    # === BARRA SUPERIORE ===
+    col1, col2 = st.columns([5, 2])
+    
     with col1:
         st.header("🪪 Ricerca report")
     with col2:
@@ -267,9 +269,10 @@ def interface():
         with subcol1:
             st.markdown(f"Ciao, **{st.session_state.firstname.upper()} {st.session_state.lastname.upper()}**!")
         with subcol2:
-            if st.button("Logout"):
-                st.session_state.view = "home"
-                st.rerun()
+            if st.button("🚪 Logout", type="primary"):
+                logout_form()
+                # st.session_state.view = "home"
+                # st.rerun()
     
     st.divider()
     

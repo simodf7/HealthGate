@@ -8,7 +8,8 @@ import streamlit as st
 import requests
 import datetime
 import pandas as pd
-from config import CSS_STYLE, PAGE_ICON
+from config_css import CSS_STYLE, PAGE_ICON
+from config import URL_GATEWAY 
 
 today = datetime.date.today()
 maxDate = today.replace(year=today.year - 18)  # Utente deve avere almeno 18 anni
@@ -18,7 +19,7 @@ maxDate = today.replace(year=today.year - 18)  # Utente deve avere almeno 18 ann
 def load_comuni():
     try:
         # Il file usa ";" come separatore
-        df = pd.read_csv("frontend/birthplaces/comuni_italiani.csv", sep=";", dtype=str)
+        df = pd.read_csv("birthplaces/comuni_italiani.csv", sep=";", dtype=str)
 
         # Usa la colonna 'denominazione_ita' per i nomi dei comuni
         comuni = sorted(df["denominazione_ita"].dropna().unique().tolist())
@@ -55,7 +56,7 @@ def interface():
         st.header("Registrazione utente")
 
     with col2_header:
-        if st.button("Torna alla Home", key="cancel_patient_signup_returnhome", icon="🏠", use_container_width=True):
+        if st.button("Torna alla Home", key="cancel_patient_signup_returnhome", icon="🏠", use_container_width=True, type="primary"):
             st.session_state.view = "home"
             st.rerun()
 
@@ -102,7 +103,7 @@ def interface():
             st.error(error_message, icon=error_icon)
             st.session_state.signup_error_paziente = None
 
-        if st.button("Registrati come Paziente", key="signup_patient_button", use_container_width=True):
+        if st.button("Registrati come Paziente", key="signup_patient_button", use_container_width=True, type="primary"):
             _perform_patient_signup()
 
     elif user_type == "Operatore":
@@ -125,7 +126,7 @@ def interface():
             st.error(error_message, icon=error_icon)
             st.session_state.signup_error_operatore = None
 
-        if st.button("Registrati come Operatore", key="signup_operator_button", use_container_width=True):
+        if st.button("Registrati come Operatore", key="signup_operator_button", use_container_width=True, type="primary"):
             _perform_operator_signup()
 
 # Gestione errori
@@ -205,7 +206,7 @@ def _perform_patient_signup():
 
         try:
             response = requests.post(
-                "http://localhost:8000/signup/patient",
+                f"{URL_GATEWAY}/signup/patient",
                 json=payload,
                 headers={"Content-Type": "application/json"}
             )
@@ -257,7 +258,7 @@ def _perform_operator_signup():
 
         try:
             response = requests.post(
-                "http://localhost:8000/signup/operator",
+                f"{URL_GATEWAY}/signup/operator",
                 json=payload,
                 headers={"Content-Type": "application/json"}
             )
