@@ -29,7 +29,6 @@ class DecisionAdapter:
         """
 
         payload = {
-            "storia" : "", ## storia di rimuovere solo testing
             "sintomi": ingestion_output.get("corrected_text"),   # mapping logico
         }
 

@@ -4,10 +4,12 @@
 Modulo per la schermata relativa al paziente.
 """
  
+import requests
 import streamlit as st
 import os
 from datetime import datetime
 from config_css import CSS_STYLE, PAGE_ICON, initialize_session_state, logout_form
+from config import URL_GATEWAY
  
 # Definisci le cartelle per audio e trascrizioni
 INPUT_FOLDER = "./input_files"
@@ -15,6 +17,7 @@ TRANSCRIPTS_FOLDER = "./transcripts"
  
 # === SELEZIONE MODALITÀ ===
 def symptom_interface():
+
     # Configurazione della pagina Streamlit
     st.set_page_config(
         page_title="Registrazione sintomi",
@@ -36,6 +39,7 @@ def symptom_interface():
         st.toast(f"Rieccoti, {st.session_state.firstname} {st.session_state.lastname}!", icon="✅")
         st.session_state.patient_login_success = False  # Resetto il FLAG
  
+
     # === BARRA SUPERIORE ===
     col1, col2 = st.columns([5, 2])
  
@@ -67,6 +71,8 @@ def symptom_interface():
         input_data = st.audio_input(st.session_state.firstname + ", registra l'audio", label_visibility="visible")
        
         if input_data:
+
+            
             os.makedirs(INPUT_FOLDER, exist_ok=True)
             timestamp = datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
             audio_filename = f"{timestamp}.wav"
@@ -83,6 +89,7 @@ def symptom_interface():
        
     elif input_mode == "📁 Carica file audio":
         # === CARICAMENTO FILE AUDIO ===
+        
         input_data = st.file_uploader(
             st.session_state.firstname + ", carica un file audio",
             type=["wav", "mp3", "m4a", "ogg", "flac"],
@@ -93,8 +100,9 @@ def symptom_interface():
             os.makedirs(INPUT_FOLDER, exist_ok=True)
             file_extension = "." + input_data.name.split(".")[-1].lower()
             timestamp = datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
-            audio_filename = f"{timestamp}{file_extension}"
+            st.session_state.audio_filename = f"{timestamp}{file_extension}"
             audio_path = os.path.join(INPUT_FOLDER, audio_filename)
+        
            
             try:
                 with open(audio_path, "wb") as f:
@@ -102,11 +110,13 @@ def symptom_interface():
                 st.session_state.audio_path = audio_path
                 st.toast(f"File '{input_data.name}' caricato correttamente!", icon="✅", duration="short")
                 input_ready = True
+
             except Exception as e:
                 st.error(f"❌ Errore nel salvataggio dell'audio: {e}")
  
     elif input_mode == "🖊️ Trascrivi sintomi":
         # === CARICAMENTO TESTO SCRITTO ===
+        
         transcription_text = st.text_area(
             st.session_state.firstname + ", trascrivi qui i tuoi sintomi",
             height="content",
@@ -120,30 +130,60 @@ def symptom_interface():
  
     # === BOTTONE PER PROCEDERE ===
     if input_ready:
-            col1,col2,col3 = st.columns(3)
+        col1,col2,col3 = st.columns(3)
  
-            with col2:
-                if st.button("➡️ Procedi", use_container_width=True, type="primary"):
-                    # Diramazione in base alla modalità di input
-                    if input_mode in ["🎙️ Registra audio", "📁 Carica file audio"]:
-                        st.info("🔄 Elaborazione in corso...")
-                        # Qui inserire la logica per: trascrizione audio -> elaborazione LLM -> RAG
+        with col2:
+            if st.button("➡️ Procedi", use_container_width=True, type="primary"):
+                st.info("🔄 Elaborazione in corso...")
+                headers = {"Authorization": f"Bearer {st.session_state.token}"}
+
+
+                try:
+                    with st.spinner("Procedendo con l'elaborazione..."):
+
+                        # === Caso AUDIO ===
+                        if input_mode in ["🎙️ Registra audio", "📁 Carica file audio"]:
+                            if "audio_path" not in st.session_state:
+                                st.error("⚠️ Nessun file audio trovato.")
+                            else:
+                                audio_path = st.session_state.audio_path
+                                filename = os.path.basename(audio_path)
+
+                                # Apri il file binario per l’invio
+                                with open(audio_path, "rb") as f:
+                                    files = {"file": (filename, f, "audio/wav")}
+                                    response = requests.post(f"{URL_GATEWAY}/diagnose", files=files, headers=headers)
+
+                        # === Caso TESTO ===
+                        elif input_mode == "🖊️ Trascrivi sintomi":
+                            if "transcription_text" not in st.session_state or not st.session_state.transcription_text.strip():
+                                st.error("⚠️ Inserisci del testo prima di procedere.")
+                            else:
+                                data = {"text": st.session_state.transcription_text}
+                                response = requests.post(f"{URL_GATEWAY}/diagnose", data=data, headers=headers)
+
+                        # === Gestione risposta ===
+                        if response.status_code == 200:
+                            result = response.json()
+                            st.success("✅ Elaborazione completata!")
+                            st.write("**Risultato correzione:**")
+                            st.write(result.get("corrected_text", "Nessun testo restituito."))
+                            st.write("**Timestamp:**", result.get("timestamp", "-"))
+
+                            if input_mode in ["🎙️ Registra audio", "📁 Carica file audio"]:
+                                os.remove(st.session_state.audio_path)
+                                st.toast("🧹 File audio locale eliminato", icon="🗑️")
+                                del st.session_state.audio_path  # rimuove la variabile dalla sessione
+                        
+                        else:
+                            st.error(f"❌ Errore: {response.status_code} - {response.text}")
+
+                except Exception as e:
+                    st.error(f"❌ Errore durante la chiamata all'API: {e}")
  
-                        with st.spinner("Procedendo con l'elaborazione..."):
-                            import time
-                            time.sleep(10)
-                            st.success("Fatto!")
-                            # Ad esempio: chiamare una funzione di processing, cambiare pagina, etc.
-                    elif input_mode == "🖊️ Trascrivi sintomi":
-                        st.info("🔄 Elaborazione in corso...")
-                        # Qui inserire la logica per: elaborazione LLM -> RAG
- 
-                        with st.spinner("Procedendo con l'elaborazione..."):
-                            import time
-                            time.sleep(10)
-                            st.success("Fatto!")
-                            # Ad esempio: chiamare una funzione di processing, cambiare pagina, etc.
- 
+
+
+
 def reports_interface():
     # Configurazione della pagina Streamlit
     st.set_page_config(

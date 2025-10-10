@@ -1,6 +1,11 @@
 # 1. Immagine base con Python 3.13
 FROM python:3.13-slim
 
+
+# Installa ffmpeg
+RUN apt-get update && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
+
+
 # 2. Imposta la cartella di lavoro
 WORKDIR /app
 

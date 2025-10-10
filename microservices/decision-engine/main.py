@@ -25,9 +25,10 @@ async def lifespan(app: FastAPI):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global embedding_model, llm, vector_store, graph, client
+    print("Inizio caricamento modelli...", flush=True)
     llm, embedding_model, vector_store, graph = await load_all()
+    print("Modelli caricati correttamente.", flush=True)
     client = httpx.AsyncClient(timeout=20.0)
-    print("Modelli caricati correttamente.")
     yield
     await client.aclose()
 
@@ -36,12 +37,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="LLM Service", lifespan=lifespan)
 
 
-
-# Schema input per la richiesta
-class ClinicalRequest(BaseModel):
-    # storia: str
+class DiagnoseRequest:
     sintomi: str
-
 
 
 @app.get("/")
@@ -57,7 +54,7 @@ def health_token():
 
 
 @app.post("/llm/diagnose", response_model=Dict)
-async def diagnose(req: ClinicalRequest, request: Request):
+async def diagnose(data: DiagnoseRequest, request: Request):
     """
     Endpoint che riceve un testo clinico e restituisce JSON strutturato
     dopo correzione, estrazione e validazione.
@@ -68,7 +65,7 @@ async def diagnose(req: ClinicalRequest, request: Request):
         resp = await client.get(f"{AGGREGATOR_SERVICE}{AGGREGATOR_ROUTE}/{user_id}")
         resp.raise_for_status()
         
-        response = graph.invoke({"sintomi": req.sintomi, "age": resp['age'], "sex": resp['sex'], "reports": resp['reports']})
+        response = graph.invoke({"sintomi": data.sintomi, "age": resp['age'], "sex": resp['sex'], "reports": resp['reports']})
          
         # Verifica che 'answer' sia presente e non None
         raw_answer = response.get("answer")
@@ -87,7 +84,7 @@ async def diagnose(req: ClinicalRequest, request: Request):
             "patient_id": resp['patient_id'],
             "social_sec_number": resp['social_sec_number'],
             "date": datetime.now().strftime("%Y-%m-%d"),
-            "sintomi": req.sintomi,
+            "sintomi": data.sintomi,
             "motivazione": answer_json.get("motivazione", ""),
             "diagnosi": "",
             "trattamento": ""

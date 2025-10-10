@@ -77,6 +77,7 @@ async def proxy_request(request: Request, method: str, service_url: str, role: s
 
     url = f"{service_url}{target_path}"  # concateniamo con l'url del microservizio es. /localhost:8001
 
+    print(url)
   
 
     """
