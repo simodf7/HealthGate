@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from fastapi import FastAPI, HTTPException, Request
 import httpx
 from pydantic import BaseModel
@@ -37,7 +37,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="LLM Service", lifespan=lifespan)
 
 
-class DiagnoseRequest:
+class DiagnoseRequest(BaseModel):
     sintomi: str
 
 
@@ -61,12 +61,17 @@ async def diagnose(data: DiagnoseRequest, request: Request):
     """
     try:
 
+        print("Ricevuta richiesta")
         user_id = request.headers.get("X-User-Id")
         resp = await client.get(f"{AGGREGATOR_SERVICE}{AGGREGATOR_ROUTE}/{user_id}")
         resp.raise_for_status()
         
+        resp = resp.json()
+        print("appost")
         response = graph.invoke({"sintomi": data.sintomi, "age": resp['age'], "sex": resp['sex'], "reports": resp['reports']})
          
+        print("Ripost")
+
         # Verifica che 'answer' sia presente e non None
         raw_answer = response.get("answer")
         print(raw_answer)
@@ -89,8 +94,10 @@ async def diagnose(data: DiagnoseRequest, request: Request):
             "diagnosi": "",
             "trattamento": ""
         }
+
+        print(report_payload)
         
-        response = await client.post(f"{REPORT_SERVICE_URL}{REPORT_ROUTE}", payload = report_payload)
+        response = await client.post(f"{REPORT_SERVICE_URL}{REPORT_ROUTE}", json = report_payload)
 
 
         return answer_json 

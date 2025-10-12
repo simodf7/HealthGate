@@ -101,6 +101,7 @@ async def find_patient_by_id(id: int, db: AsyncSession):
 
     patient = result.scalar_one_or_none()  
     if patient is None:
+        print("Non ho trovato nient")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Paziente non trovato"

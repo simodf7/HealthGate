@@ -4,6 +4,7 @@
 Modulo per la schermata relativa al paziente.
 """
  
+import pandas as pd
 import requests
 import streamlit as st
 import os
@@ -164,12 +165,11 @@ def symptom_interface():
 
                         # === Gestione risposta ===
                         if response.status_code == 200:
-                            result = response.json()
+                            response = response.json()
                             st.success("✅ Elaborazione completata!")
-                            st.write("**Risultato correzione:**")
-                            st.write(result.get("corrected_text", "Nessun testo restituito."))
-                            st.write("**Timestamp:**", result.get("timestamp", "-"))
-
+                            st.write("**Decisione**:", response["decisione"])
+                            st.write("**Motivazione**:", response["motivazione"])
+                            
                             if input_mode in ["🎙️ Registra audio", "📁 Carica file audio"]:
                                 os.remove(st.session_state.audio_path)
                                 st.toast("🧹 File audio locale eliminato", icon="🗑️")
@@ -217,61 +217,74 @@ def reports_interface():
  
     st.divider()
  
-    # --- Carica i dati (placeholder) ---
-    from operator_ui import load_all_data  # riutilizzo della funzione placeholder (sposta in config)
-    df = load_all_data()
-   
-    if df.empty:
-        st.warning("⚠️ Nessun report disponibile.")
-        return
- 
-    # --- Filtra e mostra tutti i report del paziente loggato ---
-    ssn = st.session_state.social_sec_number
- 
-    if not ssn:
-        st.warning("⚠️ Codice fiscale non disponibile.")
-        return
- 
-    patient_reports = df[df['social_sec_number'] == ssn].sort_values('date', ascending=False)
-    if patient_reports.empty:
-        st.info("Nessun report trovato per te.")
-        return
- 
-    patient_row = patient_reports.iloc[0]
-    firstname = patient_row['firstname']
-    lastname = patient_row['lastname']
-   
-    st.markdown(f"### 👤 {firstname} {lastname}")
-    st.markdown(f"**Codice Fiscale:** `{ssn}`")
-    st.markdown(f"*{len(patient_reports)} report trovati.*")
-    st.divider()
- 
-    for _, report in patient_reports.iterrows():
-        report_date = report.get('date').strftime('%d/%m/%Y')
-        report_id = report['record_id']
-       
-        with st.expander(f"**Report del {report_date}**"):
-            col1, col2, col3, col4 = st.columns([2, 2, 2, 2])
-            with col1:
-                st.markdown(f"**Data:** {report_date}")
-            with col2:
-                st.markdown(f"**Sintomi:** {report.get('sintomi', 'Nessuno')}")
-            with col3:
-                st.markdown(f"**Diagnosi:** {report.get('diagnosi', 'N/A')}")
-            with col4:
-                st.markdown(f"**Trattamento:** {report.get('trattamento', 'N/A')}")
- 
-            # Bottone PDF (placeholder)
-            if st.button("📄 Genera PDF", key=f"pdf_{report_id}", use_container_width=True, type="primary"):
-                pdf_path = "microservices/report-management/pdf/20251006_133030_Campanella_Ale-Report.pdf"
-                pdf_filename = os.path.basename(pdf_path)
-                st.pdf(pdf_path, height=350)
-               
-                with open(pdf_path, "rb") as pdf_file:
-                    st.download_button(
-                        label="📩 Scarica PDF",
-                        data=pdf_file.read(),
-                        file_name=pdf_filename,
-                        mime="application/pdf",
-                        key=f"download_{report_id}"
-                    )
+    patient_id = st.session_state.id
+    headers = {"Authorization": f"Bearer {st.session_state.token}"}
+    response = requests.get(f"{URL_GATEWAY}/reports/id/{patient_id}", headers=headers)
+
+    if response.status_code == 200:
+        reports = response.json()
+        df = pd.DataFrame(reports)
+        
+        if df.empty:
+            st.warning("⚠️ Nessun report disponibile.")
+            return
+
+        if 'date' in df.columns:
+            df['date'] = pd.to_datetime(df['date'])
+        if 'created_at' in df.columns:
+            df['created_at'] = pd.to_datetime(df['created_at'])
+
+
+        st.dataframe(df)
+
+        # --- Filtra e mostra tutti i report del paziente loggato ---
+        ssn = st.session_state.social_sec_number
+
+        if not ssn:
+            st.warning("⚠️ Codice fiscale non disponibile.")
+            return
+
+        patient_reports = df[df['social_sec_number'] == ssn].sort_values('date', ascending=False)
+        if patient_reports.empty:
+            st.info("Nessun report trovato per te.")
+            return
+
+        patient_row = patient_reports.iloc[0]
+        firstname = patient_row['firstname']
+        lastname = patient_row['lastname']
+
+        st.markdown(f"### 👤 {firstname} {lastname}")
+        st.markdown(f"**Codice Fiscale:** `{ssn}`")
+        st.markdown(f"*{len(patient_reports)} report trovati.*")
+        st.divider()
+
+        for _, report in patient_reports.iterrows():
+            report_date = report.get('date').strftime('%d/%m/%Y')
+            report_id = report['record_id']
+
+            with st.expander(f"**Report del {report_date}**"):
+                col1, col2, col3, col4 = st.columns([2, 2, 2, 2])
+                with col1:
+                    st.markdown(f"**Data:** {report_date}")
+                with col2:
+                    st.markdown(f"**Sintomi:** {report.get('sintomi', 'Nessuno')}")
+                with col3:
+                    st.markdown(f"**Diagnosi:** {report.get('diagnosi', 'N/A')}")
+                with col4:
+                    st.markdown(f"**Trattamento:** {report.get('trattamento', 'N/A')}")
+
+                if st.button("📄 Genera PDF", key=f"pdf_{report_id}", use_container_width=True, type="primary"):
+                    pdf_path = "microservices/report-management/pdf/20251006_133030_Campanella_Ale-Report.pdf"
+                    pdf_filename = os.path.basename(pdf_path)
+                    st.pdf(pdf_path, height=350)
+
+                    with open(pdf_path, "rb") as pdf_file:
+                        st.download_button(
+                            label="📩 Scarica PDF",
+                            data=pdf_file.read(),
+                            file_name=pdf_filename,
+                            mime="application/pdf",
+                            key=f"download_{report_id}"
+                        )
+    else:
+        st.error(f"Errore nel recupero report: {response.status_code}")

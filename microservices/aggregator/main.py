@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 import httpx
 from contextlib import asynccontextmanager
 from config import AUTH_SERVICE_URL, REPORT_SERVICE_URL, ROUTE_AUTH_SERVICE, ROUTE_REPORT_SERVICE
-from datetime import date
+from datetime import date, datetime
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -27,14 +27,23 @@ async def get_patient_context(patient_id: int):
     if auth_resp.status_code != 200 or report_resp.status_code != 200:
         raise HTTPException(status_code=500, detail="Failed to fetch data")
     
-    age = app.state.today.year - auth_resp['birth_date'].year - (
-        (app.state.today.month, app.state.today.day) < (auth_resp['birth_date'].month, auth_resp['birth_date'].day)
-        )
+    auth_data = auth_resp.json()
+     # 🔹 Converti la data ISO in datetime.date
+    
+    # 🔹 Converte la stringa ISO in datetime.date
+    birth_date = datetime.fromisoformat(auth_data['birth_date']).date()
 
+    age = app.state.today.year - birth_date.year - (
+        (app.state.today.month, app.state.today.day) < (birth_date.month, birth_date.day)
+        )
+    
+
+
+    print("Age:", age)
 
     report_data = report_resp.json()
 
-
+    print(report_data)
     # 🔹 Estrazione campi dai report
     reports_list = [
         {
@@ -50,9 +59,9 @@ async def get_patient_context(patient_id: int):
     # 🔹 Risposta aggregata
     return {
         "patient_id": patient_id,
-        "social_sec_number": auth_resp['social_sec_number'],
+        "social_sec_number": auth_data['social_sec_number'],
         "age": age,
-        "sex": auth_resp["sex"],
+        "sex": auth_data["sex"],
         "reports": reports_list
     }
     

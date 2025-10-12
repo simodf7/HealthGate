@@ -145,8 +145,9 @@ def _perform_login():
             data = response.json()
             print(data)
             st.session_state.token = data.get("access_token")
-
+            
             if st.session_state.view == "patient-login":
+                st.session_state.id = data.get("patient_id")
                 st.session_state.firstname = data.get("firstname")
                 st.session_state.lastname = data.get("lastname")
                 st.session_state.birth_date = data.get("birth_date")

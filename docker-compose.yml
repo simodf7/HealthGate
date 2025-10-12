@@ -75,6 +75,8 @@ services:
       - microservices/decision-engine/.env
     depends_on:
       - chroma
+    volumes:
+      - ./chroma:/chroma 
     networks:
       - microservices-network
 

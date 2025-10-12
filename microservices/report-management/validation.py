@@ -8,8 +8,8 @@ class Report(BaseModel):
     social_sec_number: str
     patient_id: int
     date: str
-    motivazione: str
-    diagnosi: str 
+    motivazione: Optional[str] = None 
+    diagnosi: Optional[str] = None  
     sintomi: str 
     trattamento: str 
     created_at: str 
@@ -19,8 +19,9 @@ class CreateReportRequest(BaseModel):
     patient_id: int
     social_sec_number: str
     date: str  # data del report
+    motivazione: str
     diagnosi: Optional[str] = None
-    sintomi: Optional[str] = None
+    sintomi: str 
     trattamento: Optional[str] = None
 
 

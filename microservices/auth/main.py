@@ -110,6 +110,7 @@ async def get_user_profile(patient_id:int, db: AsyncSession = Depends(get_db)):
     """
     Endpoint per ottenere un profilo utente da un operatore (esempio aggiuntivo)
     """
+
     patient = await find_patient_by_id(patient_id, db)
 
     return {

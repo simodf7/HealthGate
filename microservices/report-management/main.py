@@ -68,6 +68,11 @@ async def find_report_by_patient_id(patient_id: int):
     """
     Ottiene tutti i report di un paziente tramite patient_id
     """
+
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database non disponibile")
+    
+    
     collection = db['reports']
     reports = await get_reports_by_patient_id(collection, patient_id)
     return reports

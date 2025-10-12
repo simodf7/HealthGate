@@ -1,6 +1,8 @@
 import os
 from datetime import datetime
-from fastapi import FastAPI, UploadFile, File, HTTPException, Form
+
+
+from fastapi import FastAPI, UploadFile, File, HTTPException, Form, Request
 from contextlib import asynccontextmanager
 from ingest_ops import transcribe_audio_file, save_transcription, correct_transcription
 from model import load_model_stt, load_model_correction
@@ -30,6 +32,7 @@ async def health_check():
 
 @app.post("/ingestion", response_model=dict)
 async def ingest(
+    request: Request, 
     file: UploadFile = File(None),
     text: str = Form(None)
 ):
@@ -107,7 +110,7 @@ async def ingest(
 
         try:
             adapter = DecisionAdapter()
-            response = await adapter.send(output_ingest)
+            response = await adapter.send(headers=request.headers, ingestion_output=output_ingest)
             print("Risposta dal Decision Service:", response)
             return response
 
