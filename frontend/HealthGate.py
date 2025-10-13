@@ -27,4 +27,4 @@ elif st.session_state.view == "patient-logged-symptoms":
 elif st.session_state.view == "patient-logged-reports":
     patient_ui.reports_interface()
 elif st.session_state.view == "operator-logged":
-    operator_ui.interface()
+    operator_ui.alt_interface()

@@ -54,8 +54,10 @@ async def verify_jwt_with_role(request: Request, required_role: str):
     # Controllo ruolo
     role = payload.get("scope")
 
-    if role != required_role:
-        raise HTTPException(status_code=403, detail="Permesso negato")    
+    print(role)
+    if required_role:  
+        if role != required_role:
+            raise HTTPException(status_code=403, detail="Permesso negato")    
 
     request.state.user = {"user_id": payload.get("sub"), "role": role, "expiry": payload.get("exp")}
     return 
@@ -189,13 +191,17 @@ async def diagnose_proxy(request: Request):
 
 ## ROUTE PER RICAVARE I REPORT DI UN PAZIENTE
 
-@app.get("/reports/id/{patient_id}")
+@app.get("/reports")
 async def find_reports_proxy(request: Request):
+    return await proxy_request(request, "get", MICROSERVICES["report"], "operator")
+
+@app.get("/reports/id/{patient_id}")
+async def find_reports_by_id_proxy(request: Request):
     return await proxy_request(request, "get", MICROSERVICES["report"], "patient")
 
 
 @app.get("/reports/ssn/{social_sec_number}")
-async def find_reports_proxy(request: Request):
+async def find_reports_by_ssn_proxy(request: Request):
     return await proxy_request(request, "get", MICROSERVICES["report"], "operator")
 
 

@@ -11,6 +11,12 @@ import os
 from datetime import datetime
 from config_css import CSS_STYLE, PAGE_ICON, initialize_session_state, logout_form
 from config import URL_GATEWAY
+
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
  
 # Definisci le cartelle per audio e trascrizioni
 INPUT_FOLDER = "./input_files"
@@ -223,6 +229,7 @@ def reports_interface():
 
     if response.status_code == 200:
         reports = response.json()
+        logger.info(f"Reports response: {reports}")
         df = pd.DataFrame(reports)
         
         if df.empty:
@@ -249,9 +256,9 @@ def reports_interface():
             st.info("Nessun report trovato per te.")
             return
 
-        patient_row = patient_reports.iloc[0]
-        firstname = patient_row['firstname']
-        lastname = patient_row['lastname']
+       #  patient_row = patient_reports.iloc[0]
+        firstname = st.session_state.firstname
+        lastname = st.session_state.lastname
 
         st.markdown(f"### 👤 {firstname} {lastname}")
         st.markdown(f"**Codice Fiscale:** `{ssn}`")
@@ -260,7 +267,7 @@ def reports_interface():
 
         for _, report in patient_reports.iterrows():
             report_date = report.get('date').strftime('%d/%m/%Y')
-            report_id = report['record_id']
+            report_id = report['id'] if 'id' in report else None
 
             with st.expander(f"**Report del {report_date}**"):
                 col1, col2, col3, col4 = st.columns([2, 2, 2, 2])
@@ -273,18 +280,25 @@ def reports_interface():
                 with col4:
                     st.markdown(f"**Trattamento:** {report.get('trattamento', 'N/A')}")
 
-                if st.button("📄 Genera PDF", key=f"pdf_{report_id}", use_container_width=True, type="primary"):
-                    pdf_path = "microservices/report-management/pdf/20251006_133030_Campanella_Ale-Report.pdf"
-                    pdf_filename = os.path.basename(pdf_path)
-                    st.pdf(pdf_path, height=350)
-
-                    with open(pdf_path, "rb") as pdf_file:
-                        st.download_button(
-                            label="📩 Scarica PDF",
-                            data=pdf_file.read(),
-                            file_name=pdf_filename,
-                            mime="application/pdf",
-                            key=f"download_{report_id}"
-                        )
-    else:
-        st.error(f"Errore nel recupero report: {response.status_code}")
+                if st.button("📄 Genera PDF completo", key=f"generate_pdf_{report['id']}", type="primary", use_container_width=True):
+                    try:
+                        pdf_url = f"{URL_GATEWAY}/report/pdf/{report_id}"
+                        pdf_response = requests.get(pdf_url, headers=headers)
+            
+                        if pdf_response.status_code == 200:
+                            pdf_filename = f"Report_Completo_{lastname}_{firstname}_{datetime.now().strftime('%Y%m%d')}.pdf"
+            
+                            st.download_button(
+                                label="📩 Scarica PDF",
+                                data=pdf_response.content,
+                                file_name=pdf_filename,
+                                mime="application/pdf"
+                            )
+                            st.success("✅ PDF generato con successo!")
+                        elif pdf_response.status_code == 404:
+                            st.warning("⚠️ Nessun report trovato per questo codice fiscale.")
+                        else:
+                            st.error(f"❌ Errore generazione PDF: {pdf_response.status_code}")
+            
+                    except Exception as e:
+                        st.error(f"❌ Errore durante la generazione del PDF: {e}")

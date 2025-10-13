@@ -34,7 +34,7 @@ async def connect_db():
 # ----------------------------------------------------------
 
 async def get_reports(collection):
-    return list(collection.find(limit=100))
+    return list(collection.find())
 
 
 async def get_report_by_id(collection, report_id: str):
@@ -43,11 +43,21 @@ async def get_report_by_id(collection, report_id: str):
 
 async def get_reports_by_patient_id(collection, patient_id: int):
     """Restituisce tutti i report clinici di un paziente ordinati per data."""
-    return list(collection.find({"patient_id": patient_id}).sort("data", 1))
+    l = list(collection.find({"patient_id": patient_id}).sort("data", 1))
+    for r in l:
+        if "_id" in r and isinstance(r["_id"], ObjectId):
+            r["id"] = str(r["_id"])
+    print(l)
+    return l
 
 async def get_reports_by_patient_ssn(collection, social_sec_number : str):
     """Restituisce tutti i report clinici di un paziente ordinati per data."""
-    return list(collection.find({"social_sec_number": social_sec_number})).sort("data", 1)
+    l = list(collection.find({"social_sec_number": social_sec_number}).sort("data", 1))
+    for r in l:
+        if "_id" in r and isinstance(r["_id"], ObjectId):
+            r["id"] = str(r["_id"])
+    print(l)
+    return l
 
 async def modify_report(collection, report_id:str, diagnosi:str, trattamento:str):
     oid = ObjectId(report_id)

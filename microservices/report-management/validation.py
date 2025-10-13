@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 
 class Report(BaseModel):
-    _id: str  
+    id: str  
     social_sec_number: str
     patient_id: int
     date: str
