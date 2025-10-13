@@ -30,7 +30,42 @@ async def connect_db():
     
 
 # ----------------------------------------------------------
+<<<<<<< Updated upstream
 # FUNZIONI
+=======
+# 🔧 SERIALIZZAZIONE REPORT
+# ----------------------------------------------------------
+def serialize_report(report):
+    """
+    Converte ricorsivamente ObjectId e datetime in stringhe per la serializzazione JSON.
+    Gestisce documenti, liste e valori annidati.
+    """
+    if not report:
+        return report
+    
+    if isinstance(report, list):
+        return [serialize_report(item) for item in report]
+    
+    if isinstance(report, dict):
+        serialized = {}
+        for key, value in report.items():
+            serialized[key] = serialize_report(value)
+        return serialized
+    
+    # Converti ObjectId in stringa
+    if isinstance(report, ObjectId):
+        return str(report)
+    
+    # Converti datetime/date in stringa ISO
+    if isinstance(report, (datetime, date)):
+        return report.isoformat()
+    
+    return report
+
+
+# ----------------------------------------------------------
+# 🧩 FUNZIONI DI ACCESSO AL DB
+>>>>>>> Stashed changes
 # ----------------------------------------------------------
 
 async def get_reports(collection):
