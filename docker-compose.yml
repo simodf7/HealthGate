@@ -117,7 +117,10 @@ services:
     networks:
       - microservices-network
 
+<<<<<<< Updated upstream
    
+=======
+>>>>>>> Stashed changes
 volumes:
   auth-db-data:
 

@@ -9,9 +9,14 @@ import requests
 import streamlit as st
 import os
 from datetime import datetime
+<<<<<<< Updated upstream
 from config_css import CSS_STYLE, PAGE_ICON, initialize_session_state, logout_form
 from config import URL_GATEWAY
  
+=======
+from config import CSS_STYLE, PAGE_ICON, initialize_session_state, logout_form
+
+>>>>>>> Stashed changes
 # Definisci le cartelle per audio e trascrizioni
 INPUT_FOLDER = "./input_files"
 TRANSCRIPTS_FOLDER = "./transcripts"
@@ -192,7 +197,11 @@ def reports_interface():
         page_icon=PAGE_ICON,
         initial_sidebar_state="expanded"
     )
+<<<<<<< Updated upstream
  
+=======
+
+>>>>>>> Stashed changes
     with st.sidebar:
         if st.button("🚑 Registrazione sintomi", key="symptom-inserting", type="secondary"):
             st.session_state.view = "patient-logged-symptoms"
@@ -203,7 +212,10 @@ def reports_interface():
  
     # === BARRA SUPERIORE ===
     col1, col2 = st.columns([5, 2])
+<<<<<<< Updated upstream
  
+=======
+>>>>>>> Stashed changes
     with col1:
         st.header("🗂️ Visualizzazione report")
  
@@ -216,6 +228,7 @@ def reports_interface():
                 logout_form()
  
     st.divider()
+<<<<<<< Updated upstream
  
     patient_id = st.session_state.id
     headers = {"Authorization": f"Bearer {st.session_state.token}"}
@@ -288,3 +301,64 @@ def reports_interface():
                         )
     else:
         st.error(f"Errore nel recupero report: {response.status_code}")
+=======
+
+    # --- Carica i dati (placeholder) ---
+    from frontend.operator_ui import load_all_data  # riutilizzo della funzione placeholder (sposta in config)
+    df = load_all_data()
+    
+    if df.empty:
+        st.warning("⚠️ Nessun report disponibile.")
+        return
+
+    # --- Filtra e mostra tutti i report del paziente loggato ---
+    ssn = st.session_state.social_sec_number
+
+    if not ssn:
+        st.warning("⚠️ Codice fiscale non disponibile.")
+        return
+
+    patient_reports = df[df['social_sec_number'] == ssn].sort_values('date', ascending=False)
+    if patient_reports.empty:
+        st.info("Nessun report trovato per te.")
+        return
+
+    patient_row = patient_reports.iloc[0]
+    firstname = patient_row['firstname']
+    lastname = patient_row['lastname']
+    
+    st.markdown(f"### 👤 {firstname} {lastname}")
+    st.markdown(f"**Codice Fiscale:** `{ssn}`")
+    st.markdown(f"*{len(patient_reports)} report trovati.*")
+    st.divider()
+
+    for _, report in patient_reports.iterrows():
+        report_date = report.get('date').strftime('%d/%m/%Y')
+        report_id = report['record_id']
+        
+        with st.expander(f"**Report del {report_date}**"):
+            col1, col2, col3, col4 = st.columns([2, 2, 2, 2])
+            with col1:
+                st.markdown(f"**Data:** {report_date}")
+            with col2:
+                st.markdown(f"**Sintomi:** {report.get('sintomi', 'Nessuno')}")
+            with col3:
+                st.markdown(f"**Diagnosi:** {report.get('diagnosi', 'N/A')}")
+            with col4:
+                st.markdown(f"**Trattamento:** {report.get('trattamento', 'N/A')}")
+
+            # Bottone PDF (placeholder)
+            if st.button("📄 Genera PDF", key=f"pdf_{report_id}", use_container_width=True, type="primary"):
+                pdf_path = "microservices/report-management/pdf/20251006_133030_Campanella_Ale-Report.pdf"
+                pdf_filename = os.path.basename(pdf_path)
+                st.pdf(pdf_path, height=350)
+                
+                with open(pdf_path, "rb") as pdf_file:
+                    st.download_button(
+                        label="📩 Scarica PDF",
+                        data=pdf_file.read(),
+                        file_name=pdf_filename,
+                        mime="application/pdf",
+                        key=f"download_{report_id}"
+                    )
+>>>>>>> Stashed changes
