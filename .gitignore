@@ -32,3 +32,5 @@ varie/*.pdf
 chroma/
 linee_indirizzo.txt
 frontend/input_files/
+
+preprocessing_docs\documents
