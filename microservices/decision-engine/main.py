@@ -68,6 +68,7 @@ async def diagnose(data: DiagnoseRequest, request: Request):
         
         resp = resp.json()
         print("appost")
+        print(resp)
         response = graph.invoke({"sintomi": data.sintomi, "age": resp['age'], "sex": resp['sex'], "reports": resp['reports']})
          
         print("Ripost")

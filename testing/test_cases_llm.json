@@ -1,0 +1,286 @@
+[
+  {
+    "id": "LLM-01",
+    "input": "Ho febbre alta e tosse secca",
+    "age": 34,
+    "sex": "F",
+    "reports": [
+      {
+        "data": "2024-06-15",
+        "sintomi": "Febbre alta e tosse persistente",
+        "motivazione": "Possibile infezione respiratoria non grave",
+        "diagnosi": "Bronchite acuta",
+        "trattamento": "Antibiotico orale e riposo domiciliare"
+      }
+    ]
+  },
+  {
+    "id": "LLM-02",
+    "input": "Dolore al petto e difficoltà a respirare",
+    "age": 67,
+    "sex": "M",
+    "reports": [
+      {
+        "data": "2024-05-01",
+        "sintomi": "Affaticamento e dolore toracico occasionale",
+        "motivazione": "Valutare in pronto soccorso",
+        "diagnosi": "Sospetta angina - approfondimenti",
+        "trattamento": "Ospedalizzazione e test cardiologici"
+      }
+    ]
+  },
+  {
+    "id": "LLM-03",
+    "input": "Mi gira la testa e ho nausea",
+    "age": 25,
+    "sex": "F",
+    "reports": [
+      {
+        "data": "2024-08-02",
+        "sintomi": "Dolore epigastrico e nausea post-prandiale",
+        "motivazione": "Probabile gastrite, non urgente",
+        "diagnosi": "Gastrite acuta",
+        "trattamento": "PPI e dieta"
+      }
+    ]
+  },
+  {
+    "id": "LLM-04",
+    "input": "Mal digola e febbre",
+    "age": 16,
+    "sex": "M",
+    "reports": []
+  },
+  {
+    "id": "LLM-05",
+    "input": "Stanchezza e dolori muscolari",
+    "age": 45,
+    "sex": "F",
+    "reports": [
+      {
+        "data": "2023-12-10",
+        "sintomi": "Affaticamento prolungato",
+        "motivazione": "Monitorare; visita ambulatoriale se persiste",
+        "diagnosi": "Affaticamento non specifico",
+        "trattamento": "Riposo e follow-up"
+      }
+    ]
+  },
+  {
+    "id": "LLM-06",
+    "input": "Bruciore quando urino e dolore al basso ventre",
+    "age": 29,
+    "sex": "F",
+    "reports": []
+  },
+  {
+    "id": "LLM-07",
+    "input": "Vista offuscata, formicolio alle mani e confusione",
+    "age": 78,
+    "sex": "M",
+    "reports": [
+      {
+        "data": "2024-09-10",
+        "sintomi": "Caduta e confusione transitoria",
+        "motivazione": "Valutare in PS per sospetta causa neurologica",
+        "diagnosi": "TIA sospetto",
+        "trattamento": "Approfondimenti neurologici"
+      }
+    ]
+  },
+  {
+    "id": "LLM-08",
+    "input": "tosse e febbr a (errore ortografico) da 3 giorni",
+    "age": 5,
+    "sex": "M",
+    "reports": [
+      {
+        "data": "2024-06-15",
+        "sintomi": "Febbre alta e tosse persistente",
+        "motivazione": "Possibile infezione respiratoria non grave",
+        "diagnosi": "Bronchite acuta",
+        "trattamento": "Antibiotico orale e riposo domiciliare"
+      }
+    ]
+  },
+  {
+    "id": "LLM-09",
+    "input": "dolore addominale severo ma senza vomito",
+    "age": 50,
+    "sex": "F",
+    "reports": [
+      {
+        "data": "2024-08-02",
+        "sintomi": "Dolore epigastrico e nausea post-prandiale",
+        "motivazione": "Probabile gastrite, non richiede accesso urgente",
+        "diagnosi": "Gastrite acuta",
+        "trattamento": "PPI e dieta"
+      },
+      {
+        "data": "2024-09-20",
+        "sintomi": "Dolore addominale ricorrente",
+        "motivazione": "Richiedere ulteriori esami",
+        "diagnosi": "Sospetta ulcera/colica biliare",
+        "trattamento": "Ulteriori indagini"
+      }
+    ]
+  },
+  {
+    "id": "LLM-10",
+    "input": "mi sento debole ma nessun altro sintomo",
+    "age": 30,
+    "sex": "F",
+    "reports": []
+  }, 
+  {
+    "id": "LLM-11",
+    "input": "Dolore intenso al piede destro dopo una camminata lunga",
+    "age": 40,
+    "sex": "M",
+    "reports": [
+      {
+        "data": "2024-07-22",
+        "sintomi": "Dolore localizzato al piede destro, gonfiore lieve",
+        "motivazione": "Probabile fascite plantare o trauma minore",
+        "diagnosi": "Fascite plantare",
+        "trattamento": "Riposo, ghiaccio e fisioterapia"
+      }
+    ]
+  },
+  {
+    "id": "LLM-12",
+    "input": "Mal di testa persistente dietro la nuca",
+    "age": 52,
+    "sex": "F",
+    "reports": [
+      {
+        "data": "2024-05-18",
+        "sintomi": "Cefalea tensiva posteriore, dolore muscolare cervicale",
+        "motivazione": "Valutazione non urgente, possibile cefalea tensiva",
+        "diagnosi": "Cefalea tensiva",
+        "trattamento": "Analgesici leggeri e rilassamento muscolare"
+      }
+    ]
+  },
+  {
+    "id": "LLM-13",
+    "input": "Ciclo mestruale molto abbondante e stanchezza",
+    "age": 35,
+    "sex": "F",
+    "reports": [
+      {
+        "data": "2024-06-25",
+        "sintomi": "Mestruazioni abbondanti e affaticamento",
+        "motivazione": "Possibile anemia o squilibrio ormonale",
+        "diagnosi": "Menorragia con sospetta anemia lieve",
+        "trattamento": "Integratori di ferro e visita ginecologica"
+      }
+    ]
+  },
+  {
+    "id": "LLM-14",
+    "input": "Prurito diffuso e macchie rosse sulla pelle",
+    "age": 22,
+    "sex": "M",
+    "reports": [
+      {
+        "data": "2024-09-03",
+        "sintomi": "Eruzione cutanea diffusa e prurito",
+        "motivazione": "Possibile reazione allergica o dermatite",
+        "diagnosi": "Dermatite allergica",
+        "trattamento": "Antistaminico e crema cortisonica"
+      }
+    ]
+  },
+  {
+    "id": "LLM-15",
+    "input": "Dolore alla schiena quando mi piego",
+    "age": 47,
+    "sex": "M",
+    "reports": [
+      {
+        "data": "2024-10-01",
+        "sintomi": "Dolore lombare meccanico",
+        "motivazione": "Probabile contrattura o sforzo muscolare",
+        "diagnosi": "Lombalgia acuta",
+        "trattamento": "FANS e fisioterapia leggera"
+      }
+    ]
+  },
+  {
+    "id": "LLM-16",
+    "input": "Dolore all’orecchio sinistro e leggera perdita d’udito",
+    "age": 28,
+    "sex": "F",
+    "reports": [
+      {
+        "data": "2024-04-10",
+        "sintomi": "Otalgia e congestione auricolare",
+        "motivazione": "Probabile otite media o tappo di cerume",
+        "diagnosi": "Otite media acuta",
+        "trattamento": "Antibiotico topico e decongestionante"
+      }
+    ]
+  },
+  {
+    "id": "LLM-17",
+    "input": "Formicolio alle dita del piede sinistro",
+    "age": 56,
+    "sex": "M",
+    "reports": [
+      {
+        "data": "2024-08-14",
+        "sintomi": "Parestesia agli arti inferiori",
+        "motivazione": "Valutare neuropatia periferica o problema circolatorio",
+        "diagnosi": "Neuropatia periferica lieve",
+        "trattamento": "Controllo glicemia e visita neurologica"
+      }
+    ]
+  },
+  {
+    "id": "LLM-18",
+    "input": "Dolore alla mandibola quando mastico",
+    "age": 38,
+    "sex": "F",
+    "reports": [
+      {
+        "data": "2024-09-12",
+        "sintomi": "Dolore articolare temporo-mandibolare",
+        "motivazione": "Possibile disfunzione ATM non urgente",
+        "diagnosi": "Disfunzione dell’articolazione temporo-mandibolare",
+        "trattamento": "Fisioterapia mandibolare e riduzione stress"
+      }
+    ]
+  },
+  {
+    "id": "LLM-19",
+    "input": "Dolore improvviso alla spalla destra dopo aver sollevato un peso",
+    "age": 33,
+    "sex": "M",
+    "reports": [
+      {
+        "data": "2024-10-02",
+        "sintomi": "Dolore acuto e limitazione di movimento alla spalla",
+        "motivazione": "Probabile lesione muscolare o tendinea",
+        "diagnosi": "Sospetta tendinite del sovraspinato",
+        "trattamento": "Immobilizzazione parziale e ghiaccio"
+      }
+    ]
+  },
+  {
+    "id": "LLM-20",
+    "input": "Mi sento il cuore battere molto forte anche a riposo",
+    "age": 60,
+    "sex": "F",
+    "reports": [
+      {
+        "data": "2024-07-30",
+        "sintomi": "Palpitazioni e tachicardia occasionale",
+        "motivazione": "Valutare aritmia o ansia",
+        "diagnosi": "Tachicardia sinusale",
+        "trattamento": "ECG e monitoraggio cardiaco"
+      }
+    ]
+  }
+]
+

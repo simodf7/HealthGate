@@ -54,15 +54,23 @@ def generate(state: State, llm):
     print(docs_content)
     print("\n\n-----\n\n")
 
-    report_text = "\n".join(
+    if len(state['reports']) != 0:
+        report_text = "\n".join(
         f"- Data Report: {r.get('data', 'N/A')}\n"
         f"  Sintomi: {r.get('sintomi', 'N/A')}\n"
-        f"  Motivazioni date dall'LLM: {r.get('motivazioni', 'N/A')}\n"
+        f"  Motivazioni date dall'LLM sul recarsi o meno al pronto soccorso: {r.get('motivazione', 'N/A')}\n"
         f"  Diagnosi del medico del pronto soccorso: {r.get('diagnosi', 'N/A')}\n"
         f"  Trattamento del medico del pronto soccorso: {r.get('trattamento', 'N/A')}\n"
         for r in state["reports"]
     )
+    else:
+        report_text = "\n Non sono presenti report clinici precedenti associati a questo paziente \n"
 
+
+
+    print("\n\n--- REPORT TEXT ---\n\n")
+    print(report_text)
+    print("\n\n-----\n\n")
 
 
     messages = prompt.invoke({"sintomi": state["sintomi"], "age": state["age"], "sex": state['sex'], "report": report_text, "context": docs_content})
@@ -93,13 +101,47 @@ prompt_template = """
     - Precedenti Report clinici del paziente: {report}
     - Estratti da linee guida ufficiali relativi ai sintomi: {context}
 
-    Rispondi seguendo ESATTAMENTE con la struttura seguente in formato JSON.
+    Rispondi seguendo ESATTAMENTE con un dizionario come segue.
     
-    Answer: 
-    {{
+    Answer: {
         "decisione": "Pronto soccorso necessario" o "Pronto soccorso non necessario",
-        "motivazione": "Breve spiegazione della decisione"
-    }}
+        "motivazione": Breve spiegazione della decisione
+    }
+       
+
+    ---
+
+   ### ESEMPIO
+
+    **Esempio di input:**
+    - Sintomi attuali del paziente: 
+    "Il paziente lamenta dolore toracico oppressivo irradiato al braccio sinistro, associato a difficoltà respiratoria e sudorazione fredda, insorti da circa 20 minuti."
+
+    - Età del paziente: 58  
+    - Sesso del paziente: "M"  
+
+    - Precedenti Report clinici del paziente:  
+        - Data Report: 2024-06-15  
+        Sintomi: Febbre alta e tosse persistente  
+        Motivazioni date dall'LLM sul recarsi al pronto soccorso o meno: Possibile infezione respiratoria non grave  
+        Diagnosi del medico del pronto soccorso: Bronchite acuta  
+        Trattamento del medico del pronto soccorso: Antibiotico orale e riposo domiciliare  
+
+        - Data Report: 2024-08-02  
+        Sintomi: Dolore epigastrico e nausea post-prandiale  
+        Motivazioni date dall'LLM sul recarsi al pronto soccorso o meno: Probabile gastrite, non richiede accesso urgente  
+        Diagnosi del medico del pronto soccorso: Gastrite acuta  
+        Trattamento del medico del pronto soccorso: Inibitori di pompa protonica e dieta leggera per 7 giorni  
+
+    - Estratti da linee guida ufficiali relativi ai sintomi:  
+    "Il dolore toracico di tipo oppressivo, irradiato al braccio o alla mandibola e associato a dispnea o sudorazione, deve essere considerato un possibile segno di sindrome coronarica acuta.  
+    È raccomandato l’invio immediato del paziente al pronto soccorso per valutazione cardiologica urgente."
+
+    **Esempio di output:**
+    {
+        "decisione": "Pronto soccorso necessario",
+        "motivazione": "Il dolore toracico oppressivo irradiato e la dispnea sono compatibili con una possibile sindrome coronarica acuta, come indicato dalle linee guida. È indicato l’invio immediato in pronto soccorso per accertamenti urgenti."
+    }
 
 """
 

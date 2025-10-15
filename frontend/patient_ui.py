@@ -9,7 +9,6 @@ import requests
 import streamlit as st
 import os
 from datetime import datetime
-<<<<<<< Updated upstream
 from config_css import CSS_STYLE, PAGE_ICON, initialize_session_state, logout_form
 from config import URL_GATEWAY
 
@@ -108,7 +107,7 @@ def symptom_interface():
             os.makedirs(INPUT_FOLDER, exist_ok=True)
             file_extension = "." + input_data.name.split(".")[-1].lower()
             timestamp = datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
-            st.session_state.audio_filename = f"{timestamp}{file_extension}"
+            audio_filename = f"{timestamp}{file_extension}"
             audio_path = os.path.join(INPUT_FOLDER, audio_filename)
         
            
@@ -199,11 +198,7 @@ def reports_interface():
         page_icon=PAGE_ICON,
         initial_sidebar_state="expanded"
     )
-<<<<<<< Updated upstream
  
-=======
-
->>>>>>> Stashed changes
     with st.sidebar:
         if st.button("🚑 Registrazione sintomi", key="symptom-inserting", type="secondary"):
             st.session_state.view = "patient-logged-symptoms"
@@ -214,10 +209,7 @@ def reports_interface():
  
     # === BARRA SUPERIORE ===
     col1, col2 = st.columns([5, 2])
-<<<<<<< Updated upstream
  
-=======
->>>>>>> Stashed changes
     with col1:
         st.header("🗂️ Visualizzazione report")
  
@@ -230,7 +222,7 @@ def reports_interface():
                 logout_form()
  
     st.divider()
-<<<<<<< Updated upstream
+
  
     patient_id = st.session_state.id
     headers = {"Authorization": f"Bearer {st.session_state.token}"}

@@ -8,13 +8,8 @@ class Report(BaseModel):
     social_sec_number: str
     patient_id: int
     date: str
-<<<<<<< Updated upstream
     motivazione: Optional[str] = None 
     diagnosi: Optional[str] = None  
-=======
-    motivazione: str
-    diagnosi: str 
->>>>>>> Stashed changes
     sintomi: str 
     trattamento: str 
     created_at: str 

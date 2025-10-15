@@ -55,9 +55,9 @@ def correct_transcription(llm, transcription: str) -> str:
 
     ESEMPIO:
     [Input]
-    "fem 62 anni dolore stomaco nausea vomito sangue pressione bassa 90 60"
+    "Ciao ho dolore stomaco nausea vomito sangue pressione bassa 90 60"
     [Output]
-    "Paziente femmina di 62 anni con dolore addominale, nausea e vomito ematico. Ipotensione (PA 90/60 mmHg)."
+    "Il paziente riferisce dolore addominale, nausea e vomito ematico. Presenta ipotensione (PA 90/60 mmHg)."
  
     
     Trascrizione da correggere:

@@ -5,7 +5,7 @@ services:
     build: microservices/api-gateway
     container_name: api-gateway
     ports:
-      - "8000:8000"
+      - "8010:8010"
     env_file:
       - microservices/api-gateway/.env
     depends_on:
@@ -55,9 +55,9 @@ services:
     image: ghcr.io/chroma-core/chroma:latest
     container_name: chroma
     ports:
-      - "8010:8000"                            # <── Espone 8010 sul tuo host
+      - "8000:8000"
     volumes:
-      - ./chroma:/chroma
+      - ./chroma:/data 
     environment:
       - ALLOW_RESET=true
     networks:
@@ -76,7 +76,7 @@ services:
     depends_on:
       - chroma
     volumes:
-      - ./chroma:/chroma 
+      - ./chroma:/chroma_data
     networks:
       - microservices-network
 
@@ -117,10 +117,7 @@ services:
     networks:
       - microservices-network
 
-<<<<<<< Updated upstream
    
-=======
->>>>>>> Stashed changes
 volumes:
   auth-db-data:
 
