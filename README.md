@@ -259,26 +259,7 @@ HealthGate/
 
 ---
 
-## Contributing
-
-Contributions are welcome!  
-To contribute:
-
-1. Fork the repository  
-2. Create a feature branch (`git checkout -b feature/your-feature`)  
-3. Implement and test your changes  
-4. Submit a pull request  
-
-Please ensure:
-- Code adheres to style and naming conventions  
-- Documentation and tests are updated  
-- Services remain independent and decoupled  
-
----
-
-## License & Acknowledgements
-
-**License:** currently unlicensed (you may add MIT, Apache-2.0, or GPL as appropriate).  
+## Acknowledgements
 
 **Acknowledgements:**  
 Developed as part of the *AI System Engineering* course at **University of Naples Federico II**, by:  
@@ -286,5 +267,3 @@ Developed as part of the *AI System Engineering* course at **University of Naple
 - **Rita Castaldi**  
 - **Simone Di Fraia**  
 under the supervision of **Prof. Roberto Pietrantuono** (A.Y. 2024-25).  
-
-HealthGate draws inspiration from modern research on microservice architectures, LLM-based decision systems, and FHIR interoperability for digital health ecosystems.
