@@ -233,6 +233,18 @@ Each microservice runs in its own container within the shared network `microserv
 
 ---
 
+
+## Execution Note
+
+Due to the current configuration of the system, all databases (**PostgreSQL** and **MongoDB**) are hosted locally and are not exposed through public endpoints.  
+As a result, the platform cannot be executed or accessed externally without reconfiguring these database services or deploying them to a remote environment.
+
+This setup is intentional and ensures **data security** and **privacy**, as the system manages sensitive clinical information.  
+For demonstration or testing purposes, local execution via Docker Compose is fully supported, but **remote access is currently disabled**.
+
+---
+
+
 ## Results & Evaluation
 
 - Full communication among microservices verified  
