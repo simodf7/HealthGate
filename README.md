@@ -1,4 +1,4 @@
-![HealthGate Logo](frontend/logo/logo-1.jpeg)
+<img src="frontend/logo/logo-3-squared.jpeg" alt="HealthGate Logo" width="200"/>
 
 # HealthGate  
 *A Microservice-based AI System for Decision Support and Emergency Department Overcrowding Reduction*  
