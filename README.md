@@ -237,8 +237,6 @@ Each microservice runs in its own container within the shared network `microserv
 > ⚠️ **Warning:**  
 > All databases (**PostgreSQL** and **MongoDB**) are hosted locally and are **not accessible externally**.  
 > The platform cannot be executed remotely without reconfiguring these services.  
-> This setup ensures **data security** and **privacy**.  
-> For testing or demonstration, use **local execution via Docker Compose** only.
 
 
 
