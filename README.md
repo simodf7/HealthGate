@@ -1,3 +1,5 @@
+![HealthGate Logo](frontend/logo/logo-1.jpeg.png)
+
 # HealthGate  
 *A Microservice-based AI System for Decision Support and Emergency Department Overcrowding Reduction*  
 
