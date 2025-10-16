@@ -1,5 +1,5 @@
 @startuml activity_diagram_AUTH
-title Activity Diagram - Auth Service (Progettazione Funzionale)
+title Activity Diagram - Auth Service
 
 skinparam backgroundColor #FDFEFE
 skinparam activity {
@@ -22,16 +22,15 @@ if (Credenziali valide?) then (Sì)
   :Identificazione del tipo di utente\n(paziente o operatore);
 
   if (Utente è paziente?) then (Sì)
-    :Avvia sincronizzazione dei dati\ncon il servizio di gestione report;
+    :Avvia sincronizzazione dei dati;
     if (Sincronizzazione completata?) then (Sì)
-      :Conferma aggiornamento dei dati anagrafici;
+      :Conferma/Aggiorna i dati anagrafici;
     else (No)
       :Segnala mancata sincronizzazione\nma continua il processo di login;
     endif
   endif
 
   :Registra evento di accesso riuscito;
-  :Prepara risposta con informazioni utente e permessi;
   :Invia esito positivo al richiedente;
 else (No)
   :Genera messaggio di errore\n"Accesso non autorizzato";

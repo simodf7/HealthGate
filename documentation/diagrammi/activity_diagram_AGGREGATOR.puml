@@ -1,5 +1,5 @@
 @startuml activity_diagram_AGGREGATOR
-title Activity Diagram - Aggregator Service (Progettazione Funzionale)
+title Activity Diagram - Aggregator Service
 
 skinparam backgroundColor #FDFEFE
 skinparam activity {
@@ -15,23 +15,20 @@ skinparam activity {
 start
 
 :Ricezione richiesta di aggregazione;
-note right
-Il servizio riceve l'identificativo del paziente
-dal Gateway o da un altro microservizio.
-end note
 
-:Recupera i dati anagrafici dal servizio Auth;
-:Recupera lo storico dei report dal servizio Report;
+fork
+    :Recupera i dati anagrafici dal servizio Auth;
+fork again
+    :Recupera lo storico dei report dal servizio Report;
+end fork
 
 if (Entrambi i servizi rispondono correttamente?) then (Sì)
-  :Elabora i dati ricevuti;
-  :Calcola l’età del paziente a partire dalla data di nascita;
   :Combina le informazioni anagrafiche con lo storico clinico;
-  :Crea un’unica struttura dati di contesto paziente;
   :Restituisce il contesto aggregato ai servizi richiedenti;
 else (No)
   :Genera messaggio di errore "Dati non disponibili";
 endif
 
 stop
+
 @enduml

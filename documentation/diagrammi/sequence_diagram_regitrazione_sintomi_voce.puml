@@ -1,0 +1,46 @@
+@startuml sequence_diagram_TEXT
+title Sequence Diagram - Registrazione Sintomi e Classificazione tramite Input Testuale
+
+skinparam backgroundColor #FFFFFF
+skinparam sequence {
+  ArrowColor #000080
+  LifeLineBorderColor #000080
+  LifeLineBackgroundColor #C0392B
+  ParticipantBackgroundColor #000080
+  ParticipantFontColor #FFFFFF
+  FontColor #000060
+}
+
+actor Paziente as "Paziente"
+participant FE as "Frontend"
+participant APIG as "API Gateway"
+participant IS as "Ingestion Service"
+participant DEC as "Decision Engine Service"
+participant REP as "Report Management Service"
+
+== Inserimento sintomi ==
+Paziente -> FE : Seleziona la funzione "Registra sintomi testuali"
+Paziente -> FE : Inserisce i sintomi nel campo di testo
+FE -> APIG : Richiesta di valutazione clinica tramite sintomi testuali
+
+== Ingestione e normalizzazione ==
+APIG -> IS : Richiesta di ingestione del testo
+IS --> IS  : Correzione e normalizzazione dei sintomi
+
+== Analisi e decisione ==
+IS -> DEC : Invio sintomi normalizzati per elaborazione
+DEC --> DEC : Analisi e classificazione clinica dei sintomi
+
+== Generazione report ==
+DEC -> REP : Richiesta di creazione del report clinico\n(con sintomi elaborati)
+REP --> DEC : Report generato e archiviato nel fascicolo elettronico
+
+== Restituzione risultati ==
+DEC --> IS : Inoltro della risposta elaborata
+IS --> APIG : Invio del risultato al Gateway
+
+== Conferma all’utente ==
+APIG --> FE : Esito decisionale e conferma di generazione report
+FE --> Paziente : Messaggio di conferma\n"Sintomi analizzati e report disponibile"
+
+@enduml

@@ -1,0 +1,42 @@
+@startuml activity_diagram_AUTH
+title Activity Diagram - Report (Richiesta di Generazione PDF)
+
+skinparam backgroundColor #FDFEFE
+skinparam activity {
+  BackgroundColor #000080
+  BorderColor #000060
+  FontColor white
+  DiamondBackgroundColor #0086b3
+  DiamondBorderColor #004466
+  StartColor #C0392B
+  EndColor #C0392B
+}
+
+start
+
+:Ricezione richiesta di generazione PDF;
+
+:Verifica della correttezza della richiesta;
+
+if (Richiesta valida?) then (Sì)
+  :Ricerca del Report nella base dati;
+  if (Ricerca a buon fine?) then (Sì)
+    :Report Trovato;
+    :Ricerca dell'Anagrafica del paziente;
+    if (Ricerca anagrafica a buon fine?) then (Sì)
+        :Generazione PDF;
+    else (No)
+        :Genera messaggio di errore\n"Ricerca Anagrafica non è andata buon fine / Anagrafica non Trovata";
+        stop
+    endif
+  else (No)
+    :Genera messaggio di errore\n"Ricerca non è andata a buon fine / Report non Trovato";
+    stop
+  endif
+else (No)
+  :Genera messaggio di errore\n"Richiesta di creazione non rispetta il formato richiesto";
+  stop
+endif
+
+stop
+@enduml

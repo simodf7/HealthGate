@@ -1,5 +1,5 @@
 @startuml activity_diagram_API
-title Activity Diagram - API Gateway (Progettazione Funzionale)
+title Activity Diagram - API Gateway
 
 skinparam backgroundColor #FDFEFE
 skinparam activity {
@@ -29,7 +29,7 @@ if (Richiesta di autenticazione?) then (Sì)
   :Attendi risposta e inoltra al frontend;
   stop
 else (No)
-  :Richiede token di accesso (JWT);
+  :Verifica token di accesso (JWT);
 endif
 
 if (Token valido e non scaduto?) then (Sì)
@@ -45,18 +45,12 @@ else (No)
   stop
 endif
 
-:Seleziona il microservizio di destinazione;
+:Prepara e inoltra la richiesta al microservizio relativo alla richiesta utente;
 note right
 - Auth Service per autenticazione  
 - Ingestion Service per diagnosi  
 - Report Service per referti
 end note
-
-if (Richiesta di diagnosi?) then (Sì)
-  :Instrada la richiesta verso il modulo di acquisizione (Ingestion);
-endif
-
-:Prepara e inoltra la richiesta al microservizio appropriato;
 
 if (Risposta ricevuta correttamente?) then (Sì)
   :Restituisci al frontend l’esito della richiesta;

@@ -1,0 +1,28 @@
+@startuml sequence_diagram_REPORT_CONSULTATION
+title Sequence Diagram - Consultazione Report Pazienti
+
+skinparam backgroundColor #FFFFFF
+skinparam sequence {
+  ArrowColor #000080
+  LifeLineBorderColor #000080
+  LifeLineBackgroundColor #C0392B
+  ParticipantBackgroundColor #000080
+  ParticipantFontColor #FFFFFF
+  FontColor #000060
+}
+
+actor Operatore as "Operatore Sanitario"
+participant FE as "Frontend / App"
+participant APIG as "API Gateway"
+participant REP as "Report Management Service"
+
+
+== Selezione paziente e report ==
+Operatore -> FE : Inserisce identificativo del paziente
+FE -> APIG : Richiesta report associati al paziente
+APIG -> REP : Inoltro richiesta elenco report del paziente
+REP --> APIG : Restituisce elenco report disponibili
+APIG --> FE : Inoltra elenco report
+FE --> Operatore : Viene mostrata lista dei report del paziente
+
+@enduml

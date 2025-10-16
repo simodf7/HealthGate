@@ -2,9 +2,9 @@
 
 from fastapi import FastAPI
 from typing import List
-from mongodb import * 
+from database import * 
 from contextlib import asynccontextmanager
-from pdf_gen2 import genera_pdf
+from pdf_gen import genera_pdf
 from validation import *
 from report_ops import get_anagrafica
 

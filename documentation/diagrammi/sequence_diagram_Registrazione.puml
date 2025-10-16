@@ -1,0 +1,38 @@
+@startuml sequence_diagram_API
+title Sequence Diagram - Registrazione Utente (Paziente / Operatore Sanitario)
+
+skinparam backgroundColor #FFFFFF
+skinparam sequence {
+  ArrowColor #000080
+  LifeLineBorderColor #000080
+  LifeLineBackgroundColor #C0392B
+  ParticipantBackgroundColor #000080
+  ParticipantFontColor #FFFFFF
+  FontColor #000060
+}
+
+actor User as "Utente (Paziente / Operatore Sanitario)"
+participant FE as "Frontend"
+participant APIG as "API Gateway"
+participant Auth as "Auth Service"
+
+== Registrazione ==
+User -> FE : Seleziona il ruolo (Paziente / Operatore Sanitario)
+User -> FE : Inserisce i dati di registrazione\n(in base al ruolo selezionato)
+
+FE -> APIG : Richiesta di registrazione con i dati utente
+APIG -> Auth : Inoltra richiesta di registrazione
+
+Auth -> Auth : Valida i dati inseriti
+
+alt Dati validi
+    Auth --> APIG : Esito positivo (registrazione completata)
+    APIG --> FE : Conferma registrazione riuscita
+    FE --> User : Messaggio di conferma e possibilità di accesso
+else Dati non validi
+    Auth --> APIG : Errore di validazione
+    APIG --> FE : Messaggio di errore "Dati non corretti"
+    FE --> User : Richiede reinserimento dei dati
+end
+
+@enduml

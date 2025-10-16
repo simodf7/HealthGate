@@ -1,0 +1,29 @@
+@startuml sequence_diagram_HISTORY
+title Sequence Diagram - Consultazione Cronologia Personale
+
+skinparam backgroundColor #FFFFFF
+skinparam sequence {
+  ArrowColor #000080
+  LifeLineBorderColor #000080
+  LifeLineBackgroundColor #C0392B
+  ParticipantBackgroundColor #000080
+  ParticipantFontColor #FFFFFF
+  FontColor #000060
+}
+
+actor Paziente as "Paziente"
+participant FE as "Frontend / App"
+participant APIG as "API Gateway"
+participant REP as "Report Management Service"
+
+== Avvio consultazione ==
+Paziente -> FE : Accede alla sezione "Cronologia"
+FE -> APIG : Richiesta elenco report associati all’utente
+APIG -> REP : Intoltra richiesta elenco report
+REP --> APIG : Restituisce elenco report precedenti
+APIG --> FE : Inoltra elenco dei report
+
+== Visualizzazione ==
+FE --> Paziente : Viene mostrata la lista dei report disponibili
+
+@enduml

@@ -1,0 +1,29 @@
+@startuml sequence_diagram_REPORT_UPDATE
+title Sequence Diagram - Aggiornamento Report Clinico
+
+skinparam backgroundColor #FFFFFF
+skinparam sequence {
+  ArrowColor #000080
+  LifeLineBorderColor #000080
+  LifeLineBackgroundColor #C0392B
+  ParticipantBackgroundColor #000080
+  ParticipantFontColor #FFFFFF
+  FontColor #000060
+}
+
+actor Operatore as "Operatore Sanitario"
+participant FE as "Frontend / App"
+participant APIG as "API Gateway"
+participant REP as "Report Management Service"
+
+
+== Modifica Report ==
+Operatore -> FE : Seleziona un report da aggiornare
+Operatore -> FE : Inserisce note su cure e piano terapeutico
+FE -> APIG : Invia richiesta di aggiornamento report
+APIG -> REP : Inoltro richiesta di aggiornamento report
+REP --> APIG : Conferma aggiornamento completato
+APIG --> FE : Esito positivo dell’operazione
+FE --> Operatore : Mostra messaggio “Report aggiornato con successo”
+
+@enduml

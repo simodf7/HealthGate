@@ -1,0 +1,81 @@
+@startuml
+title HealthGate
+
+' === COLORI GLOBALI ===
+skinparam backgroundColor #FDFEFE
+skinparam componentStyle rectangle
+skinparam shadowing false
+skinparam rectangle {
+  BackgroundColor #000080
+  BorderColor #000060
+  FontColor white
+}
+skinparam package {
+  BackgroundColor #0086b3
+  BorderColor #004466
+  FontColor white
+}
+skinparam database {
+  BackgroundColor #C0392B
+  BorderColor #7B241C
+  FontColor white
+}
+skinparam actor {
+  BackgroundColor #000080
+  BorderColor #7B241C
+  FontColor #000080
+}
+skinparam arrow {
+  Color #004466
+  FontColor #004466
+}
+
+left to right direction
+
+' === ATTORI ===
+actor "Patient" as P
+actor "Operator" as O
+
+' === FRONTEND ===
+package "Frontend" {
+  rectangle "Client mobile app" as Mobile
+  rectangle "Client Web App" as SPA
+}
+
+P -[#Blue]-> Mobile
+P -[#Blue]-> SPA
+O -[#Blue]-> SPA
+
+' === BACKEND ===
+package "Back end" {
+  rectangle "API Gateway" as Gateway
+  rectangle "Authentication Service" as Auth
+  rectangle "Symptoms Ingestion Service" as Ingestion
+  rectangle "Decision Engine Service" as Decision
+  rectangle "Report Service" as Report
+  rectangle "Aggregator Service" as Aggregator
+}
+
+' === DATABASES ===
+database "Postgres - Pazienti" as DB_Paz
+database "MongoDB - Report Clinici" as DB_Report
+
+' === CONNESSIONI ===
+Mobile -[#Blue]-> Gateway
+SPA -[#Blue]-> Gateway
+
+Gateway -[#Blue]-> Auth
+Gateway -[#Blue]-> Ingestion
+Gateway -[#Blue]-> Report
+
+Ingestion -[#Blue]-> Decision
+
+Auth -[#Blue]-> DB_Paz
+Report -[#Blue]-> DB_Report
+Decision -[#Blue]-> Aggregator
+
+Aggregator -[#Blue]-> Auth
+Aggregator -[#Blue]-> Decision
+Aggregator -[#Blue]-> Report
+
+@enduml

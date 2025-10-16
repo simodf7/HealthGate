@@ -37,8 +37,6 @@ async def get_patient_context(patient_id: int):
         (app.state.today.month, app.state.today.day) < (birth_date.month, birth_date.day)
         )
     
-
-
     print("Age:", age)
 
     report_data = report_resp.json()

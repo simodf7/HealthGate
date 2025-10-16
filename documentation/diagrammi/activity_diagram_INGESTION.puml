@@ -1,5 +1,5 @@
 @startuml activity_diagram_INGESTION
-title Activity Diagram - Ingestion Service (Progettazione Funzionale)
+title Activity Diagram - Ingestion Service
 
 skinparam backgroundColor #FDFEFE
 skinparam activity {
@@ -20,7 +20,6 @@ start
 
 if (Input è audio?) then (Sì)
   :Avvia processo di trascrizione automatica;
-  :Genera testo corrispondente all’audio;
 elseif (Input è testo?) then (Sì)
   :Utilizza direttamente il testo fornito;
 else (No)

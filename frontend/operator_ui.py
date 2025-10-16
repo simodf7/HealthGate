@@ -479,7 +479,7 @@ def alt_interface():
     st.divider()
 
     # === CAMPO DI RICERCA ===
-    st.markdown("### 🔎 Ricerca per nome, cognome o codice fiscale")
+    st.markdown("### 🔎 Ricerca per codice fiscale")
     search_text = st.text_input("Inserisci il testo da cercare:")
 
     # === PULSANTE PER ESEGUIRE LA QUERY ===

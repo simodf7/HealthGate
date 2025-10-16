@@ -23,7 +23,6 @@ def clean_text(text: str) -> str:
 
     text = re.sub(r'(?<=[a-zà-ú0-9])\.(?=[A-ZÀ-Ýa-zà-ú])', ". ", text)
 
-
     # Rimuovere underscore multipli
     text = re.sub(r"_+", "", text)
 
@@ -47,7 +46,6 @@ def clean_text(text: str) -> str:
         flags=re.MULTILINE
     )
 
-    
     text = re.sub(r'^[A-ZÀÖØÞ]{2,}(?:\s+[A-ZÀÖØÞ]{2,})*', '', text, flags=re.MULTILINE)
 
     return text

@@ -1,0 +1,36 @@
+@startuml sequence_diagram_AUTH
+title Sequence Diagram - Autenticazione
+
+skinparam backgroundColor #FFFFFF
+skinparam sequence {
+  ArrowColor #000080
+  LifeLineBorderColor #000080
+  LifeLineBackgroundColor #C0392B
+  ParticipantBackgroundColor #000080
+  ParticipantFontColor #FFFFFF
+  FontColor #000060
+}
+
+actor User as "Utente (Paziente / Operatore Sanitario)"
+participant FE as "Frontend"
+participant APIG as "API Gateway"
+participant Auth as "Auth Service"
+
+== Autenticazione ==
+User -> FE : Inserisce credenziali di accesso\n(social number - medcode / password)
+FE -> APIG : Invia richiesta di autenticazione
+APIG -> Auth : Inoltra credenziali utente
+
+Auth -> Auth : Verifica credenziali nel database
+
+alt Credenziali valide
+    Auth --> APIG : Esito positivo
+    APIG --> FE : Accesso consentito
+    FE --> User : Accesso effettuato con successo\n(Profilo: Paziente / Operatore)
+else Credenziali non valide
+    Auth --> APIG : Esito negativo (errore di autenticazione)
+    APIG --> FE : Messaggio di errore "Credenziali non corrette"
+    FE --> User : Richiesta di reinserimento delle credenziali
+end
+
+@enduml
