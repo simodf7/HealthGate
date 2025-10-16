@@ -25,7 +25,6 @@
 - [Deployment with Docker](#deployment-with-docker)  
 - [Results & Evaluation](#results--evaluation)  
 - [Repository Structure](#repository-structure)  
-- [Contributing](#contributing)  
 - [License & Acknowledgements](#license--acknowledgements)  
 
 ---
@@ -36,7 +35,7 @@ Emergency departments worldwide face chronic overcrowding due to the **large num
 
 **HealthGate** addresses this challenge by providing an **AI-driven decision support system** capable of assessing patient-reported symptoms — either spoken or written — and determining whether an emergency visit is necessary.  
 
-The system leverages **Large Language Models (LLMs)**, a **microservice architecture**, and **FHIR-compatible interfaces** to create an interoperable, scalable, and transparent e-health platform.
+The system leverages **Large Language Models (LLMs)**, a **microservice architecture**, to create an interoperable, scalable, and transparent e-health platform.
 
 ---
 
@@ -260,8 +259,6 @@ HealthGate/
 ├── frontend/                  # Streamlit-based web interface
 ├── microservices/             # API Gateway, Auth, Ingestion, Decision, Aggregator, Report
 ├── docker-compose.yml         # Container orchestration file
-├── HealthGate.py              # Main frontend launcher
-├── .env.example               # Environment configuration template
 ├── README.md                  # This file
 └── varie/                     # Utilities, scripts, helpers
 ```
